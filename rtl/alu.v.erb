@@ -1,0 +1,40 @@
+% load "parameters.rb"
+
+module alu(/*AUTOARG*/);
+`include "parameters.vh"
+
+  /*AUTOINPUT*/
+  input                 clk;
+  input                 xrst;
+  input [DWIDTH-1:0]    in_a;
+  input [DWIDTH-1:0]    in_b;
+  input [ALUWIDTH-1:0]  alu_code;
+
+  /*AUTOOUTPUT*/
+  output              zero;
+  output [DWIDTH-1:0] result;
+
+  /*AUTOWIRE*/
+
+  /*AUTOREG*/
+  reg [DWIDTH-1:0] r_result;
+
+  assign zero = result == 0;
+  assign result = r_result;
+
+  always @(posedge clk)
+    if (!xrst)
+      r_result <= 0;
+    else
+      case (alu_code)
+        'd0:     r_result <= in_a & in_b;
+        'd1:     r_result <= in_a | in_b;
+        'd2:     r_result <= in_a + in_b;
+        'd6:     r_result <= in_a - in_b;
+        'd7:     r_result <= in_a < in_b;
+        'd12:    r_result <= ~(in_a | in_b);
+        default: r_result <= 0;
+      endcase
+
+endmodule
+
