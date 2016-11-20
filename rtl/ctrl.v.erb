@@ -1,0 +1,24 @@
+% load "parameters.rb"
+
+module ctrl(/*AUTOARG*/);
+`include "parameters.vh"
+
+  /*AUTOINPUT*/
+  input [OPWIDTH-1:0] opcode;
+
+  /*AUTOOUTPUT*/
+  output alu_op;
+  output alu_src;
+  output branch;
+  output mem_read;
+  output mem_to_reg;
+  output mem_write;
+  output reg_dst;
+  output reg_write;
+
+  /*AUTOWIRE*/
+
+  /*AUTOREG*/
+
+endmodule
+
