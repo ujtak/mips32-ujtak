@@ -4,10 +4,12 @@ module ctrl(/*AUTOARG*/);
 `include "parameters.vh"
 
   /*AUTOINPUT*/
+  input clk;
+  input xrst;
   input [OPWIDTH-1:0] opcode;
 
   /*AUTOOUTPUT*/
-  output alu_op;
+  output [ALUOP_W-1:0] alu_op;
   output alu_src;
   output branch;
   output mem_read;

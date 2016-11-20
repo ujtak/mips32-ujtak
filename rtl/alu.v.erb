@@ -2,6 +2,7 @@
 
 module alu(/*AUTOARG*/);
 `include "parameters.vh"
+`include "alu.vh"
 
   /*AUTOINPUT*/
   input                 clk;
@@ -27,13 +28,13 @@ module alu(/*AUTOARG*/);
       r_result <= 0;
     else
       case (alu_code)
-        'd0:     r_result <= in_a & in_b;
-        'd1:     r_result <= in_a | in_b;
-        'd2:     r_result <= in_a + in_b;
-        'd6:     r_result <= in_a - in_b;
-        'd7:     r_result <= in_a < in_b;
-        'd12:    r_result <= ~(in_a | in_b);
-        default: r_result <= 0;
+        ALU_AND:  r_result <= in_a & in_b;
+        ALU_OR:   r_result <= in_a | in_b;
+        ALU_ADD:  r_result <= in_a + in_b;
+        ALU_SUB:  r_result <= in_a - in_b;
+        ALU_SLT:  r_result <= in_a < in_b;
+        ALU_NOR:  r_result <= ~(in_a | in_b);
+        default:  r_result <= 0;
       endcase
 
 endmodule

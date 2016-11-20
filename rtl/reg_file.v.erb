@@ -2,14 +2,14 @@
 
 module reg_file(/*AUTOARG*/);
 `include "parameters.vh"
-  parameter WORDS = 2 ** RFSIZE;
+  parameter WORDS = 2 ** RSIZE;
 
   /*AUTOINPUT*/
   input clk;
   input reg_write;
-  input [RFSIZE-1:0] read1;
-  input [RFSIZE-1:0] read2;
-  input [RFSIZE-1:0] write_reg;
+  input [RSIZE-1:0]  read1;
+  input [RSIZE-1:0]  read2;
+  input [RSIZE-1:0]  write_reg;
   input [DWIDTH-1:0] write_data;
 
   /*AUTOOUTPUT*/

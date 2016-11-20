@@ -2,12 +2,14 @@
 
 module alu_ctrl(/*AUTOARG*/);
 `include "parameters.vh"
+`include "mips.vh"
+`include "alu.vh"
 
   /*AUTOINPUT*/
   input clk;
   input xrst;
-  input [] alu_op;
-  input [] func_code;
+  input [ALUOP_W-1:0] alu_op;
+  input [OPWIDTH-1:0] func_code;
 
   /*AUTOOUTPUT*/
   output [ALUWIDTH-1:0] alu_code;
@@ -23,14 +25,20 @@ module alu_ctrl(/*AUTOARG*/);
     if (!xrst)
       r_code <= 0;
     else
-      case (func_code)
-        32:       r_code <= 2;
-        34:       r_code <= 6;
-        36:       r_code <= 0;
-        37:       r_code <= 1;
-        39:       r_code <= 12;
-        42:       r_code <= 7;
-        default:  r_code <= 15;
+      case (alu_op)
+        ALUOP_LS: r_code <= ALU_ADD;
+        ALUOP_BEQ: r_code <= ALU_SUB;
+        ALUOP_R:
+          case (func_code)
+            MIPS_ADD: r_code <= ALU_ADD;
+            MIPS_SUB: r_code <= ALU_SUB;
+            MIPS_AND: r_code <= ALU_AND;
+            MIPS_OR:  r_code <= ALU_OR;
+            MIPS_NOR: r_code <= ALU_NOR;
+            MIPS_SLT: r_code <= ALU_SLT;
+            default:  r_code <= ALU_XXX;
+          endcase
+        default: r_code <= ALU_XXX;
       endcase
 
 endmodule
