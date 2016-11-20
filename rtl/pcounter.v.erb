@@ -1,0 +1,42 @@
+% load "parameters.rb"
+
+module pcounter(/*AUTOARG*/);
+`include "parameters.vh"
+
+  /*AUTOINPUT*/
+  input clk;
+  input xrst;
+  input zero;
+  input branch;
+  input signed [DWIDTH-1:0] extended;
+
+  /*AUTOOUTPUT*/
+  output [ISIZE-1:0] pc;
+
+  /*AUTOWIRE*/
+  wire              branch_en;
+  wire [ISIZE-1:0]  incr_count;
+  wire [ISIZE-1:0]  jump_count;
+  wire [ISIZE-1:0]  next_count;
+
+  /*AUTOREG*/
+  reg [ISIZE-1:0] r_count;
+
+  assign pc = r_count;
+
+  assign incr_count = r_count + 4;
+
+  assign jump_count = incr_count + (extended <<< 2);
+
+  assign branch_en  = branch && zero;
+
+  assign next_count = branch_en ? jump_count : incr_count;
+
+  always @(posedge clk)
+    if (!xrst)
+      r_count <= 0;
+    else
+      r_count <= next_count;
+
+endmodule
+
