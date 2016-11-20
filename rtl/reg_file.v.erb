@@ -1,0 +1,32 @@
+% load "parameters.rb"
+
+module reg_file(/*AUTOARG*/);
+`include "parameters.vh"
+  parameter WORDS = 2 ** RFSIZE;
+
+  /*AUTOINPUT*/
+  input clk;
+  input reg_write;
+  input [RFSIZE-1:0] read1;
+  input [RFSIZE-1:0] read2;
+  input [RFSIZE-1:0] write_reg;
+  input [DWIDTH-1:0] write_data;
+
+  /*AUTOOUTPUT*/
+  output [DWIDTH-1:0] data1;
+  output [DWIDTH-1:0] data2;
+
+  /*AUTOWIRE*/
+
+  /*AUTOREG*/
+  reg [DWIDTH-1:0] file [WORDS-1:0];
+
+  assign data1 = file[read1];
+  assign data2 = file[read2];
+
+  always @(posedge clk)
+    if (reg_write)
+      file[write_reg] <= write_data;
+
+endmodule
+
