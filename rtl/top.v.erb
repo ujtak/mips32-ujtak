@@ -1,0 +1,39 @@
+% load "parameters.rb"
+
+module top(/*AUTOARG*/);
+`include "parameters.vh"
+
+  /*AUTOINPUT*/
+
+  /*AUTOOUTPUT*/
+
+  /*AUTOWIRE*/
+
+  /*AUTOREG*/
+
+  /* mem_inst AUTO_TEMPLATE (
+  ); */
+  mem_inst mem_inst(/*AUTOINST*/);
+
+  /* ctrl AUTO_TEMPLATE (
+  ); */
+  ctrl ctrl(/*AUTOINST*/);
+
+  /* alu AUTO_TEMPLATE (
+  ); */
+  alu alu(/*AUTOINST*/);
+
+  /* alu_ctrl AUTO_TEMPLATE (
+  ); */
+  alu_ctrl alu_ctrl(/*AUTOINST*/);
+
+  /* reg_file AUTO_TEMPLATE (
+  ); */
+  reg_file reg_file(/*AUTOINST*/);
+
+  /* mem_data AUTO_TEMPLATE (
+  ); */
+  mem_data mem_data(/*AUTOINST*/);
+
+endmodule
+
