@@ -4,6 +4,8 @@ module top(/*AUTOARG*/);
 `include "parameters.vh"
 
   /*AUTOINPUT*/
+  input               clk;
+  input               xrst;
 
   /*AUTOOUTPUT*/
 
@@ -11,28 +13,43 @@ module top(/*AUTOARG*/);
 
   /*AUTOREG*/
 
+  /* pcounter AUTO_TEMPLATE (
+      .pc       (),
+      .extended (),
+  ); */
+  pcounter pcounter(/*AUTOINST*/);
+
   /* mem_inst AUTO_TEMPLATE (
+      .mem_we     (),
+      .mem_addr   (),
+      .mem_data   (),
+      .read_data  (inst[DWIDTH-1:0]),
   ); */
   mem_inst mem_inst(/*AUTOINST*/);
 
   /* ctrl AUTO_TEMPLATE (
+      .opcode (inst[DWIDTH-1:DWIDTH-OPWIDTH]),
   ); */
   ctrl ctrl(/*AUTOINST*/);
 
-  /* alu AUTO_TEMPLATE (
-  ); */
-  alu alu(/*AUTOINST*/);
-
-  /* alu_ctrl AUTO_TEMPLATE (
-  ); */
-  alu_ctrl alu_ctrl(/*AUTOINST*/);
-
   /* reg_file AUTO_TEMPLATE (
+      .read1      (inst[DWIDTH-OPWIDTH-1:DWIDTH-OPWIDTH-RSIZE]),
+      .read2      (inst[DWIDTH-OPWIDTH-RSIZE-1:DWIDTH-OPWIDTH-2*RSIZE]),
+      .write_reg  (),
+      .write_data (),
   ); */
   reg_file reg_file(/*AUTOINST*/);
 
-  /* mem_data AUTO_TEMPLATE (
+  sign_ext sign_ext(/*AUTOINST*/);
+
+  /* alu AUTO_TEMPLATE (
+      .in_a (data1[DWIDTH-1:0]),
+      .in_b (),
   ); */
+  alu alu(/*AUTOINST*/);
+
+  alu_ctrl alu_ctrl(/*AUTOINST*/);
+
   mem_data mem_data(/*AUTOINST*/);
 
 endmodule
