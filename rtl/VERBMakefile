@@ -232,10 +232,10 @@ class VFile
       # data_hash = {}
       data = open(file).read
       data = data.gsub(/#.*$$/, "")    # ignore comment
-                 .gsub(/\\s+/im, " ")  # gather spaces to single space
-      data.scan(/(\\S+)\\s*\\{(.*?)\\}/).each do |i|
+                 .gsub(/\s+/im, " ")  # gather spaces to single space
+      data.scan(/(\S+)\s*\{(.*?)\}/).each do |i|
         type, d = i
-        d = d.strip.split(/\\s+/)
+        d = d.strip.split(/\s+/)
         case type
         when "ignore_file"
           @@ignore_file = d
@@ -251,7 +251,7 @@ class VFile
   def initialize(module_name)
     @module_name = module_name
     @filename    = module_name + ".v"
-    @filename_body, @filename_ext = @filename.scan(/^([^.]*)\\.(.*)$$/)[0]
+    @filename_body, @filename_ext = @filename.scan(/^([^.]*)\.(.*)$$/)[0]
     @dep = nil
   end
 
@@ -300,7 +300,7 @@ class VFile
       EOF
       files << com
       c.each do |i|
-        if i =~ /\\.vh$$/
+        if i =~ /\.vh$$/
           files << i
         end
       end
@@ -352,11 +352,11 @@ class VFile
 
   def _submodules(str)
     v_files = []
-    data0 = str.scan(/([a-zA-Z_0-9]+)\\s+\\S+\\s*\\((?:\\s*\\.\\S+\\s*\\([^\\)]*\\)\\s*,{0,1}){0,}(?:\\s*\\/\\*AUTOINST\\*\\/\\s*){1}\\);/).map do |i|
+    data0 = str.scan(/([a-zA-Z_0-9]+)\s+\S+\s*\((?:\s*\.\S+\s*\([^\)]*\)\s*,{0,1}){0,}(?:\s*\/\*AUTOINST\*\/\s*){1}\);/).map do |i|
       i[0]
     end
     v_files += data0
-    data1 = str.scan(/([a-zA-Z_0-9]+)\\s+\\S+\\s*\\((?:\\s*\\.\\S+\\s*\\([^\\)]*\\)\\s*,{0,1}){1,}\\);/).map do |i|
+    data1 = str.scan(/([a-zA-Z_0-9]+)\s+\S+\s*\((?:\s*\.\S+\s*\([^\)]*\)\s*,{0,1}){1,}\);/).map do |i|
       i[0]
     end
     v_files += data1
@@ -365,9 +365,9 @@ class VFile
 
   def submodules
     v_files = _submodules(data)
-    sdata = data.gsub(/\\/\\/.*$$/, "")      # ignore 1-line comments
-                .gsub(/\\/\\*.*?\\*\\//, "")  # ignore multi-line comments
-                .gsub(/\\s+/, " ")         # condense spaces
+    sdata = data.gsub(/\/\/.*$$/, "")      # ignore 1-line comments
+                .gsub(/\/\*.*?\*\//, "")  # ignore multi-line comments
+                .gsub(/\s+/, " ")         # condense spaces
     v_files += _submodules(sdata)
     r = v_files
     r = r.uniq.sort
@@ -375,7 +375,7 @@ class VFile
   end
 
   def includes
-    v_files = data.scan(/^\\s*`include\\s+"([^"]*)"\\s*$$/).map do |i|
+    v_files = data.scan(/^\s*`include\s+"([^"]*)"\s*$$/).map do |i|
       [i[0]] + VHFile.new(i[0]).includes
     end
     return v_files.flatten.uniq
@@ -383,7 +383,7 @@ class VFile
 
   def to_dot_sub
     r = []
-    r << "node_#{@filename_body} [label=\\"#{@filename_body}\\"];"
+    r << "node_#{@filename_body} [label=\"#{@filename_body}\"];"
     r += submodules.map{|i|
       next if i =~ /</
 
@@ -391,7 +391,7 @@ class VFile
       r << "node_#{@filename_body}->node_#{i};"
       k
     }
-    r.flatten * "\\n"
+    r.flatten * "\n"
   end
 
   def to_dot
@@ -406,7 +406,7 @@ end
 class VHFile < VFile
   def initialize(filename)
     @filename = filename
-    @filename_body, @filename_ext = @filename.scan(/^([^.]*)\\.(.*)$$/)[0]
+    @filename_body, @filename_ext = @filename.scan(/^([^.]*)\.(.*)$$/)[0]
     @dep = nil
   end
 
@@ -436,8 +436,8 @@ class VFiles < Array
   def to_s
     f = self.uniq
     f = purge(f)
-    f = f.sort * " \\\\\\n\\t" + "\\n"
-    "#{name}= \\\\\\n\\t#{f}\\n"
+    f = f.sort * " \\\n\t" + "\n"
+    "#{name}= \\\n\t#{f}\n"
   end
 
   def name
@@ -445,7 +445,7 @@ class VFiles < Array
   end
 
   def purge(f)
-    f.delete_if{|i| not i =~ /\\.v$$/}
+    f.delete_if{|i| not i =~ /\.v$$/}
     f.delete_if{|i| i =~ /^alt/}
   end
 end
@@ -455,7 +455,7 @@ class VHFiles < VFiles
     "VHFILES"
   end
   def purge(f)
-    f.delete_if{|i| not i =~ /\\.vh$$/}
+    f.delete_if{|i| not i =~ /\.vh$$/}
     f.delete_if{|i| i =~ /^alt/}
   end
 end
@@ -494,22 +494,22 @@ top_vfiles_s = top_vfiles.map{|t|
   files_all += files
 
   f = files.uniq
-  f.delete_if{|i| not i =~ /\\.v$$/}
+  f.delete_if{|i| not i =~ /\.v$$/}
   f.delete_if{|i| i =~ /^alt/}
 
   k = t.module_name
 
   r += <<~EOF
 
-    #{k}_FILES= \\\\
-    \\t#{f * " \\\\\\n\\t"}
+    #{k}_FILES= \\
+    \t#{f * " \\\n\t"}
 
     #{k}: $$(#{k}_FILES) $$(#{k}_FILES_OPT)
     ifeq ($$(SIMULATOR), vcs)
-    \\t$$(VCS) -o $$@ $$(#{k}_FILES) $$(#{k}_FILES_OPT)
+    \t$$(VCS) -o $$@ $$(#{k}_FILES) $$(#{k}_FILES_OPT)
     else
     ifeq ($$(SIMULATOR), iverilog)
-    \\t$$(IVERILOG) -o $$@ $$(#{k}_FILES) $$(#{k}_FILES_OPT)
+    \t$$(IVERILOG) -o $$@ $$(#{k}_FILES) $$(#{k}_FILES_OPT)
     endif
     endif
   EOF
@@ -519,13 +519,13 @@ top_vfiles_s = top_vfiles.map{|t|
 files = files_all
 
 if options.mode == :make
-  print "## -*- makefile -*-\\n"
+  print "## -*- makefile -*-\n"
   print VFiles.new(files.dup).to_s
   print VHFiles.new(files.dup).to_s
-  print top_vfiles_s * "\\n"
+  print top_vfiles_s * "\n"
 elsif options.mode == :dc
-  files.delete_if{|i| not i =~ /\\.v$$/}
-  print files.uniq.map{|i| "read_file -format verilog #{i}\\n"}*""
+  files.delete_if{|i| not i =~ /\.v$$/}
+  print files.uniq.map{|i| "read_file -format verilog #{i}\n"}*""
 elsif options.mode == :dot
   top_vfiles.each do |t|
     print t.to_dot
