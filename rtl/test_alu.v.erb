@@ -1,0 +1,80 @@
+% load "parameters.rb"
+
+`timescale 1ns/1ps
+
+module test_alu();
+`include "parameters.vh"
+`include "alu.vh"
+
+  /*AUTOREGINPUT*/
+
+  /*AUTOWIRE*/
+
+  //clock
+  always
+  begin
+    clk = 0;
+    #(STEP/2);
+    clk = 1;
+    #(STEP/2);
+  end
+
+  //flow
+  initial
+  begin
+    xrst = 0;
+    #(STEP);
+
+    xrst = 1;
+    in_a = 0;
+    in_b = 0;
+    alu_code = ALU_XXX;
+    #(STEP);
+
+    in_a = 12;
+    in_b = 3;
+    #(STEP);
+
+    alu_code = ALU_ADD;
+    #(STEP);
+
+    alu_code = ALU_SUB;
+    #(STEP);
+
+    alu_code = ALU_AND;
+    #(STEP);
+
+    alu_code = ALU_OR;
+    #(STEP);
+
+    alu_code = ALU_NOR;
+    #(STEP);
+
+    alu_code = ALU_SLT;
+    #(STEP);
+
+    alu_code = ALU_XXX;
+    #(STEP);
+    $finish();
+  end
+
+  alu dut0(/*AUTOINST*/);
+
+  //display
+  always
+  begin
+    #(STEP/2-1);
+    $display(
+      "%d: ", $time/STEP,
+      "| ",
+      "%d ", alu_code,
+      "%d ", in_a,
+      "%d ", in_b,
+      "| ",
+      "%d ", zero,
+      "%d ", result,
+    );
+    #(STEP/2+1);
+
+endmodule
+
