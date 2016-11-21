@@ -14,9 +14,34 @@
     List.iter (fun (kwd, tok) -> Hashtbl.add instructions kwd tok)
     [
       "add", ADD;
-      "sub", SUB;
-      "li", LI;
+      "addi", ADDI;
+      "addiu", ADDIU;
+      "addu", ADDU;
+      "beq", BEQ;
+      "bne", BNE;
+      "j", J;
+      "jal", JAL;
+      "JR", JR;
+      "lbu", LBU;
+      "lhu", LHU;
+      "ll", LL;
+      "lui", LUI;
       "lw", LW;
+      "nor", NOR;
+      "or", OR;
+      "ori", ORI;
+      "slt", SLT;
+      "slti", SLTI;
+      "sltiu", SLTIU;
+      "sltu", SLTU;
+      "sll", SLL;
+      "srl", SRL;
+      "sb", SB;
+      "sc", SC;
+      "sh", SH;
+      "sw", SW;
+      "sub", SUB;
+      "subu", SUBU;
       "syscall", SYSCALL;
     ]
 }
