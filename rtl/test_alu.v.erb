@@ -53,8 +53,12 @@ module test_alu();
     alu_code = ALU_SLT;
     #(STEP);
 
-    alu_code = ALU_XXX;
+    in_a = 3;
+    in_b = 12;
     #(STEP);
+
+    alu_code = ALU_XXX;
+    #(STEP*5);
     $finish();
   end
 
@@ -65,16 +69,18 @@ module test_alu();
   begin
     #(STEP/2-1);
     $display(
-      "%d: ", $time/STEP,
+      "%2d: ", $time/STEP,
+      "%2d ", alu_code,
       "| ",
-      "%d ", alu_code,
-      "%d ", in_a,
-      "%d ", in_b,
+      "%2d ", in_a,
+      "%2d ", in_b,
       "| ",
       "%d ", zero,
       "%d ", result,
+      "%b ", result,
     );
     #(STEP/2+1);
+  end
 
 endmodule
 
