@@ -25,7 +25,7 @@
       "bne", BNE;
       "j", J;
       "jal", JAL;
-      "JR", JR;
+      "jr", JR;
       "lbu", LBU;
       "lhu", LHU;
       "ll", LL;
@@ -86,5 +86,7 @@
 
 rule token = parse
   | space+ { token lexbuf }
-  | "#*" { c
   | eof { exit 0 }
+and comment = parse
+  | "#*" { comment lexbuf;
+           comment lexbuf }

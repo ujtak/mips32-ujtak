@@ -163,19 +163,20 @@ dep.in:
 
 compile.all: $(TARGET:=.com)
 
-VERBFILES=$(wildcard *.v.erb)
-VHERBFILES=$(wildcard *.vh.erb)
-VINFILES=$(wildcard *.v.in)
+VERBFILES  = $(wildcard *.v.erb)  $(wildcard $(TEST_DIR)/*.v.erb)
+VHERBFILES = $(wildcard *.vh.erb) $(wildcard $(TEST_DIR)/*.vh.erb)
+VINFILES   = $(wildcard *.v.in)   $(wildcard $(TEST_DIR)/*.v.in)
 
 clean-common:
-	rm -f *~
-	rm -f *.com *.log
-	rm -f _*
+	rm -f *~ $(TEST_DIR)/*~
+	rm -f *.com $(TEST_DIR)/*.com
+	rm -f *.log $(TEST_DIR)/*.log
 	rm -f Makefile.dep
 	rm -f dep.rb dep.in
 
 	### vsim
 	rm -f vsim.wlf transcript
+	rm -f vish_stacktrace.vstf
 	rm -rf work csrc
 
 	### xsim
@@ -188,7 +189,7 @@ clean-common:
 	rm -rf *.daidir
 
 	### iverilog
-	rm -f *.out
+	rm -f *.out $(TEST_DIR)/*.out
 
 	rm -f $(VERBFILES:.v.erb=.v)
 	rm -f $(VERBFILES:.v.erb=.v.in)
@@ -200,8 +201,8 @@ clean-common:
 	rm -f $(LINK_FILES)
 
 $(LINK_FILES):
-	(cd $(IOC_DIR)/ ; $(MAKE) $@)
-	ln -sf $(IOC_DIR)/$@ .
+	(cd $(LINK_DIR)/ ; $(MAKE) $@)
+	ln -sf $(LINK_DIR)/$@ .
 
 ############################################################
 # dist target
@@ -506,10 +507,10 @@ top_vfiles_s = top_vfiles.map{|t|
 
     #{k}: $$(#{k}_FILES) $$(#{k}_FILES_OPT)
     ifeq ($$(SIMULATOR), vcs)
-    \t$$(VCS) -o $$@ $$(#{k}_FILES) $$(#{k}_FILES_OPT)
+    \t$$(VCS) -o $$@.out $$(#{k}_FILES) $$(#{k}_FILES_OPT)
     else
     ifeq ($$(SIMULATOR), iverilog)
-    \t$$(IVERILOG) -o $$@ $$(#{k}_FILES) $$(#{k}_FILES_OPT)
+    \t$$(IVERILOG) -o $$@.out $$(#{k}_FILES) $$(#{k}_FILES_OPT)
     endif
     endif
   EOF

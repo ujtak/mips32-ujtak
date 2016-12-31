@@ -1,11 +1,12 @@
 #### notice, don't forget update Makefile.dep
 #### (make compile.all USE_CACHE=0; ...; rm -f Makefile.dep; make Makefile.dep)
 # SIMULATOR=vcs
-# SIMULATOR=iverilog
+SIMULATOR=iverilog
 # SIMULATOR=xsim
-IOC_DIR=.
-TARGET=test_alu
-DIST=../dist
+LINK_DIR = .
+TEST_DIR = tests
+TARGET   = $(TEST_DIR)/test-alu
+DIST     = ../dist
 
 include Makefile.dep
 include VERBMakefile
@@ -20,9 +21,6 @@ all:
 
 clean:
 	make clean-common
-	rm -f log.txt
-	rm -f vish_stacktrace.vstf
-	rm -f $(TARGET)
 
 log:
 	vim $(TARGET).log
