@@ -5,7 +5,8 @@ SIMULATOR = iverilog
 # SIMULATOR=xsim
 LINK_DIR = .
 TEST_DIR = tests
-TARGET   = $(TEST_DIR)/test_pcounter
+MODULE   = sign_ext
+TARGET   = $(TEST_DIR)/test_$(MODULE)
 DIST     = ../dist
 
 include Makefile.dep
@@ -22,13 +23,13 @@ all:
 clean: clean-common
 
 log:
-	vim $(TARGET).log
+	nvim $(TARGET).log
 
 edit:
-	vim -O $(TARGET).v.erb `echo $(TARGET) | awk -F "test_" '{print $$2 ".v.erb"}'`
+	nvim -O $(TARGET).v.erb `echo $(TARGET) | awk -F "$(TEST__DIR)/test_" '{print $$2 ".v.erb"}'`
 
 diff:
-	vimdiff $(TARGET).dat $(TARGET)_true.dat
+	nvim -d $(TARGET).dat $(TARGET)_true.dat
 
 define DEP_IN
 ## -*- text -*-

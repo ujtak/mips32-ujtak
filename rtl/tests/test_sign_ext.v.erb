@@ -1,0 +1,73 @@
+% load "parameters.rb"
+
+`timescale 1ns/1ps
+
+module test_sign_ext();
+`include "parameters.vh"
+
+  /*AUTOREGINPUT*/
+
+  /*AUTOWIRE*/
+
+  //flow
+  initial
+  begin
+    in_unsigned = 16'b0000_0000_0000_0000; #(STEP);
+    in_unsigned = 16'b0000_0000_0000_0001; #(STEP);
+    in_unsigned = 16'b0000_0000_0000_0011; #(STEP);
+    in_unsigned = 16'b0000_0000_0000_0111; #(STEP);
+    in_unsigned = 16'b0000_0000_0000_1111; #(STEP);
+    in_unsigned = 16'b0000_0000_0001_1111; #(STEP);
+    in_unsigned = 16'b0000_0000_0011_1111; #(STEP);
+    in_unsigned = 16'b0000_0000_0111_1111; #(STEP);
+    in_unsigned = 16'b0000_0000_1111_1111; #(STEP);
+    in_unsigned = 16'b0000_0001_1111_1111; #(STEP);
+    in_unsigned = 16'b0000_0011_1111_1111; #(STEP);
+    in_unsigned = 16'b0000_0111_1111_1111; #(STEP);
+    in_unsigned = 16'b0000_1111_1111_1111; #(STEP);
+    in_unsigned = 16'b0001_1111_1111_1111; #(STEP);
+    in_unsigned = 16'b0011_1111_1111_1111; #(STEP);
+    in_unsigned = 16'b0111_1111_1111_1111; #(STEP);
+    in_unsigned = 16'b1111_1111_1111_1111; #(STEP);
+    in_unsigned = 16'b1111_1111_1111_1110; #(STEP);
+    in_unsigned = 16'b1111_1111_1111_1100; #(STEP);
+    in_unsigned = 16'b1111_1111_1111_1000; #(STEP);
+    in_unsigned = 16'b1111_1111_1111_0000; #(STEP);
+    in_unsigned = 16'b1111_1111_1110_0000; #(STEP);
+    in_unsigned = 16'b1111_1111_1100_0000; #(STEP);
+    in_unsigned = 16'b1111_1111_1000_0000; #(STEP);
+    in_unsigned = 16'b1111_1111_0000_0000; #(STEP);
+    in_unsigned = 16'b1111_1110_0000_0000; #(STEP);
+    in_unsigned = 16'b1111_1100_0000_0000; #(STEP);
+    in_unsigned = 16'b1111_1000_0000_0000; #(STEP);
+    in_unsigned = 16'b1111_0000_0000_0000; #(STEP);
+    in_unsigned = 16'b1110_0000_0000_0000; #(STEP);
+    in_unsigned = 16'b1100_0000_0000_0000; #(STEP);
+    in_unsigned = 16'b1000_0000_0000_0000; #(STEP);
+    in_unsigned = 16'b0000_0000_0000_0000; #(STEP);
+    $finish();
+  end
+
+  sign_ext dut0(/*AUTOINST*/);
+
+  //display
+  always
+  begin
+    #(STEP/2-1);
+    $display(
+      "%d: ", $time/STEP,
+      "| ",
+      "%d ", in_unsigned,
+      "| ",
+      "%d ", out_signed,
+      "| ",
+      "%b ", out_signed,
+    );
+    #(STEP/2+1);
+  end
+
+endmodule
+
+// Local Variables:
+// verilog-library-directories:("." "..")
+// End:

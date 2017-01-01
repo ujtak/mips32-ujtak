@@ -15,7 +15,7 @@ module sign_ext(/*AUTOARG*/);
 
   assign out_signed =
     $signed({
-      {OPWIDTH+2*RSIZE{in_unsigned[DWIDTH-OPWIDTH-2*RSIZE-1]},
+      {OPWIDTH+2*RSIZE{in_unsigned[DWIDTH-OPWIDTH-2*RSIZE-1]}},
       in_unsigned[DWIDTH-OPWIDTH-2*RSIZE-1:0]
     });
 

@@ -1,0 +1,89 @@
+% load "parameters.rb"
+
+`timescale 1ns/1ps
+
+module test_alu_ctrl();
+`include "parameters.vh"
+`include "mips.vh"
+`include "alu.vh"
+
+  /*AUTOREGINPUT*/
+
+  /*AUTOWIRE*/
+
+  //clock
+  always
+  begin
+    clk = 0;
+    #(STEP/2);
+    clk = 1;
+    #(STEP/2);
+  end
+
+  //flow
+  initial
+  begin
+    xrst = 0;
+    #(STEP);
+
+    xrst = 1;
+    alu_op    = 0;
+    func_code = 0;
+    #(STEP);
+
+    alu_op    = ALUOP_LS;
+    func_code = MIPS_ADD;
+    #(STEP*5);
+
+    alu_op    = ALUOP_BEQ;
+    func_code = MIPS_SLT;
+    #(STEP*5);
+
+    alu_op    = ALUOP_R;
+    func_code = MIPS_SLT;
+    #(STEP*5);
+
+    alu_op    = ALUOP_R;
+    func_code = MIPS_OR;
+    #(STEP*5);
+
+    alu_op    = ALUOP_R;
+    func_code = 'dx;
+    #(STEP*5);
+
+    alu_op    = ALUOP_LS;
+    func_code = 'dx;
+    #(STEP*5);
+
+    alu_op    = 'dx;
+    func_code = MIPS_NOR;
+    #(STEP*5);
+
+    $finish();
+  end
+
+  alu_ctrl dut0(/*AUTOINST*/);
+
+  //display
+  always
+  begin
+    #(STEP/2-1);
+    $display(
+      "%d: ", $time/STEP,
+      "| ",
+      "%d ", xrst,
+      "%d ", alu_op,
+      "%d ", func_code,
+      "| ",
+      "%d ", alu_code,
+      "| ",
+      "%b ", dut0.r_code,
+    );
+    #(STEP/2+1);
+  end
+
+endmodule
+
+// Local Variables:
+// verilog-library-directories:("." "..")
+// End:

@@ -2,6 +2,7 @@
 
 module ctrl(/*AUTOARG*/);
 `include "parameters.vh"
+`include "alu.vh"
 `include "opcode.vh"
 
   /*AUTOINPUT*/
@@ -45,6 +46,7 @@ module ctrl(/*AUTOARG*/);
       OP_BEQ:   gen_ctrl = 'b01010x0x0;
       default:  gen_ctrl = 'bxxxxxxxxx;
     endcase
+  endfunction
 
 endmodule
 

@@ -2,8 +2,10 @@
 
 `timescale 1ns/1ps
 
-module test_pcounter();
+module test_ctrl();
 `include "parameters.vh"
+`include "alu.vh"
+`include "opcode.vh"
 
   /*AUTOREGINPUT*/
 
@@ -25,27 +27,24 @@ module test_pcounter();
     #(STEP);
 
     xrst = 1;
-    soft_reset  = 0;
-    zero        = 0;
-    branch      = 0;
-    extended    = 0;
     #(STEP);
 
-    #(STEP*25);
-    zero = 1;
-    #(STEP*25);
-    zero = 0;
-    branch = 1;
-    #(STEP*25);
-    branch = 0;
-    #(STEP*25);
-
-    soft_reset  = 1;
+    opcode = OP_R;
     #(STEP*10);
+
+    opcode = OP_LW;
+    #(STEP*10);
+
+    opcode = OP_SW;
+    #(STEP*10);
+
+    opcode = OP_BEQ;
+    #(STEP*10);
+
     $finish();
   end
 
-  pcounter dut0(/*AUTOINST*/);
+  ctrl dut0(/*AUTOINST*/);
 
   //display
   always
@@ -54,14 +53,19 @@ module test_pcounter();
     $display(
       "%d: ", $time/STEP,
       "| ",
-      "%d ", clk,
       "%d ", xrst,
-      "%d ", soft_reset,
-      "%d ", zero,
-      "%d ", branch,
-      "%d ", extended,
+      "%d ", opcode,
       "| ",
-      "%d", pc,
+      "%d ", alu_op,
+      "%d ", alu_src,
+      "%d ", branch,
+      "%d ", mem_read,
+      "%d ", mem_to_reg,
+      "%d ", mem_write,
+      "%d ", reg_dst,
+      "%d ", reg_write,
+      "| ",
+      "%b ", dut0.ctrl_inst,
     );
     #(STEP/2+1);
   end
