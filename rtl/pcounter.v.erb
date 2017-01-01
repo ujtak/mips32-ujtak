@@ -6,6 +6,7 @@ module pcounter(/*AUTOARG*/);
   /*AUTOINPUT*/
   input clk;
   input xrst;
+  input soft_reset;
   input zero;
   input branch;
   input signed [DWIDTH-1:0] extended;
@@ -34,6 +35,8 @@ module pcounter(/*AUTOARG*/);
 
   always @(posedge clk)
     if (!xrst)
+      r_count <= 0;
+    else if (soft_reset)
       r_count <= 0;
     else
       r_count <= next_count;

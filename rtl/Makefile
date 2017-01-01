@@ -1,26 +1,25 @@
 #### notice, don't forget update Makefile.dep
 #### (make compile.all USE_CACHE=0; ...; rm -f Makefile.dep; make Makefile.dep)
 # SIMULATOR=vcs
-SIMULATOR=iverilog
+SIMULATOR = iverilog
 # SIMULATOR=xsim
 LINK_DIR = .
 TEST_DIR = tests
-TARGET   = $(TEST_DIR)/test-alu
+TARGET   = $(TEST_DIR)/test_top
 DIST     = ../dist
 
 include Makefile.dep
 include VERBMakefile
 
-.PHONY: all file sim clean
-sim: $(TARGET).log
+.PHONY: all file sim clean log edit diff
 file: $(TARGET).com
+sim: $(TARGET).log
 
 all:
 	make clean
 	make sim
 
-clean:
-	make clean-common
+clean: clean-common
 
 log:
 	vim $(TARGET).log

@@ -2,6 +2,7 @@
 
 module ctrl(/*AUTOARG*/);
 `include "parameters.vh"
+`include "opcode.vh"
 
   /*AUTOINPUT*/
   input clk;
@@ -19,8 +20,31 @@ module ctrl(/*AUTOARG*/);
   output reg_write;
 
   /*AUTOWIRE*/
+  wire [ALUOP_W+7-1:0] ctrl_inst;
 
   /*AUTOREG*/
+
+  assign ctrl_inst = gen_ctrl(opcode);
+
+  assign alu_op     = ctrl_inst[ALUOP_W+7-1:7];
+  assign alu_src    = ctrl_inst[6];
+  assign branch     = ctrl_inst[5];
+  assign mem_read   = ctrl_inst[4];
+  assign mem_to_reg = ctrl_inst[3];
+  assign mem_write  = ctrl_inst[2];
+  assign reg_dst    = ctrl_inst[1];
+  assign reg_write  = ctrl_inst[0];
+
+  function [ALUOP_W+7-1:0] gen_ctrl;
+    input [OPWIDTH-1:0] opcode;
+    case (opcode)
+      // {alu_op, alu_src, branch, mem_read, mem_to_reg, mem_write, reg_dst, reg_write}
+      OP_R:     gen_ctrl = 'b100000011;
+      OP_LW:    gen_ctrl = 'b001011001;
+      OP_SW:    gen_ctrl = 'b00100x1x0;
+      OP_BEQ:   gen_ctrl = 'b01010x0x0;
+      default:  gen_ctrl = 'bxxxxxxxxx;
+    endcase
 
 endmodule
 
