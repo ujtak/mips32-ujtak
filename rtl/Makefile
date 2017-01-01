@@ -5,7 +5,7 @@ SIMULATOR = iverilog
 # SIMULATOR=xsim
 LINK_DIR = .
 TEST_DIR = tests
-TARGET   = $(TEST_DIR)/test_top
+TARGET   = $(TEST_DIR)/test_pcounter
 DIST     = ../dist
 
 include Makefile.dep

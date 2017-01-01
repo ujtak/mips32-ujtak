@@ -1,0 +1,65 @@
+% load "parameters.rb"
+
+`timescale 1ns/1ps
+
+module test_pcounter();
+`include "parameters.vh"
+
+  /*AUTOREGINPUT*/
+
+  /*AUTOWIRE*/
+
+  //clock
+  always
+  begin
+    clk = 0;
+    #(STEP/2);
+    clk = 1;
+    #(STEP/2);
+  end
+
+  //flow
+  initial
+  begin
+    xrst = 0;
+    #(STEP);
+
+    xrst = 1;
+    soft_reset  = 0;
+    zero        = 0;
+    branch      = 0;
+    extended    = 0;
+    #(STEP);
+
+    #(STEP*100);
+    soft_reset  = 1;
+    #(STEP*10);
+    $finish();
+  end
+
+  pcounter dut0(/*AUTOINST*/);
+
+  //display
+  always
+  begin
+    #(STEP/2-1);
+    $display(
+      "%d: ", $time/STEP,
+      "| ",
+      "%d ", clk,
+      "%d ", xrst,
+      "%d ", soft_reset,
+      "%d ", zero,
+      "%d ", branch,
+      "%d ", extended,
+      "| ",
+      "%d", pc,
+    );
+    #(STEP/2+1);
+  end
+
+endmodule
+
+// Local Variables:
+// verilog-library-directories:("." "..")
+// End:
