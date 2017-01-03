@@ -1,8 +1,9 @@
-import System.Environment
-import System.FilePath
-import Text.Printf
+import System.Environment (getArgs)
+import System.Exit (die)
+import System.FilePath (dropExtension)
+import Text.Printf (printf)
 import Text.Parsec
-import Text.Parsec.String
+import Text.Parsec.String (Parser)
 
 -- main :: IO ()
 -- main = do
@@ -11,13 +12,55 @@ import Text.Parsec.String
 --   bins <- sequence $ map emitAsm srcs
 --   zipWithM_ dumpAsm dsts bins
 
-type BinCode  = [String]
+type HexCode  = [String]
 
-class AsmOp a where
-  opTable :: [(String, a)]
+class Eq a => AsmOp a where
+  opTable   :: [(String, a)]
+  -- funct: R, opcode: I and J
+  -- storaged as string of hex number
+  hexTable  :: [(a, Int)]
+  evalOp    :: a -> IO Int
+  parseOp   :: Parser a
 
-data AsmOp    = And | Or | Add | Sub | Lw | Sw | Beq | J
-              deriving Show
+  evalOp op = case lookup op hexTable of
+                Just hex -> return hex
+                Nothing  -> die "This operation is not implemented"
+  parseOp   = choice opParsers
+    where opParsers = map (\(a, b) -> try $ string a >> return b) opTable
+
+data AsmOpR = And | Or | Add | Sub
+            deriving (Show, Eq)
+instance AsmOp AsmOpR where
+  opTable   = [ ("and", And)
+              , ("or",  Or)
+              , ("add", Add)
+              , ("sub", Sub)
+              ]
+  hexTable  = [ (And, 0x24)
+              , (Or,  0x25)
+              , (Add, 0x20)
+              , (Sub, 0x22)
+              ]
+
+data AsmOpI = Lw | Sw | Beq
+            deriving (Show, Eq)
+instance AsmOp AsmOpI where
+  opTable   = [ ("lw",  Lw)
+              , ("sw",  Sw)
+              , ("beq", Beq)
+              ]
+  hexTable  = [ (Lw,  0x23)
+              , (Sw,  0x2b)
+              , (Beq, 0x4)
+              ]
+
+data AsmOpJ = J
+            deriving (Show, Eq)
+instance AsmOp AsmOpJ where
+  opTable   = [ ("j", J)
+              ]
+  hexTable  = [ (J, 0x2)
+              ]
 
 data AsmVal   = Name  String
               | Var   String
@@ -31,20 +74,15 @@ data AsmExpr  = Label AsmVal
               | OprJ  AsmOpJ AsmVal
               deriving Show
 
-opParsers :: AsmOp a => [(String, a)] -> Parser a
-opParsers = map (\(a, b) -> string a >> return b) opTable
 
-parseOp :: Parser AsmOp
-parseOp = foldl1 (<|>) opParsers
-  where opTable = [ ("and", And)
-                  , ("or", Or)
-                  , ("add", Add)
-                  , ("sub", Sub)
-                  , ("lw", Lw)
-                  , ("sw", Sw)
-                  , ("beq", Beq)
-                  , ("j", J)
-                  ]
+parseOpR :: Parser AsmOpR
+parseOpR = parseOp :: Parser AsmOpR
+
+parseOpI :: Parser AsmOpI
+parseOpI = parseOp :: Parser AsmOpI
+
+parseOpJ :: Parser AsmOpJ
+parseOpJ = parseOp :: Parser AsmOpJ
 
 parseVal :: Parser AsmVal
 parseVal  =  parseName
@@ -64,45 +102,57 @@ parseVal  =  parseName
       return $ Imm $ read num
 
 parseExpr :: Parser AsmExpr
-parseExpr  =  parseLabel
-          <|> parseOprR
-          <|> parseOprI
-          <|> parseOprJ
+parseExpr  =  try parseLabel
+          <|> try parseOprR
+          <|> try parseOprI
+          <|> try parseOprJ
   where
-    parseLabel  = do
+    parseLabel = do
+      spaces
       name <- parseVal
       char ':'
       return $ Label name
-    parseOprR   = do
+    parseOprR = do
       spaces
       op <- parseOpR; spaces
-      x1 <- parseVal; char ',' >> spaces
-      x2 <- parseVal; char ',' >> spaces
-      x3 <- parseVal; string "\n"
+      x1 <- parseVal; spaces >> char ',' >> spaces
+      x2 <- parseVal; spaces >> char ',' >> spaces
+      x3 <- parseVal; spaces
       return $ OprR op x1 x2 x3
-    parseOprI   = do
-      spaces
-      op <- parseOpI; spaces
-      x1 <- parseVal; char ',' >> spaces
-      x2 <- parseVal; char ',' >> spaces
-      x3 <- parseVal; string "\n"
-      return $ OprI op x1 x2 x3
-    parseOprJ   = do
+    parseOprI = try parseComma <|> try parseBrace
+      where
+        parseComma = do
+          spaces
+          op <- parseOpI; spaces
+          x1 <- parseVal; spaces >> char ',' >> spaces
+          x2 <- parseVal; spaces >> char ',' >> spaces
+          x3 <- parseVal; spaces
+          return $ OprI op x1 x2 x3
+        parseBrace = do
+          spaces
+          op <- parseOpI; spaces
+          x1 <- parseVal; spaces >> char ',' >> spaces
+          x2 <- parseVal; spaces
+          char '(' >> spaces
+          x3 <- parseVal; spaces
+          char ')' >> spaces
+          return $ OprI op x1 x2 x3
+    parseOprJ = do
       spaces
       op <- parseOpJ; spaces
-      x1 <- parseVal; string "\n"
+      x1 <- parseVal; spaces
       return $ OprJ op x1
 
-dumpAsm :: FilePath -> BinCode -> IO ()
+dumpAsm :: FilePath -> HexCode -> IO ()
 dumpAsm dst bin = writeFile dst $ unlines bin
 
--- emitAsm :: FilePath -> IO BinCode
+-- emitAsm :: FilePath -> IO HexCode
 
--- evalExpr :: AsmExpr -> String
-
--- evalOp :: AsmOp -> String
-
--- evalVal :: AsmVal -> String
+-- evalOpR  :: AsmOpR  -> IO String
+-- evalOpI  :: AsmOpI  -> IO String
+-- evalOpJ  :: AsmOpJ  -> IO String
+-- evalVal  :: AsmVal  -> IO String
+-- evalExpr :: AsmExpr -> IO String
 
 replaceExt :: String -> FilePath -> FilePath
 replaceExt new path = body ++ new
