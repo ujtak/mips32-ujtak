@@ -1,11 +1,9 @@
 #### notice, don't forget update Makefile.dep
-#### (make compile.all USE_CACHE=0; ...; rm -f Makefile.dep; make Makefile.dep)
-# SIMULATOR=vcs
+# SIMULATOR = (vsim,) vcs, xsim, iverilog
 SIMULATOR = iverilog
-# SIMULATOR=xsim
+MODULE   = top
 LINK_DIR = .
 TEST_DIR = tests
-MODULE   = sign_ext
 TARGET   = $(TEST_DIR)/test_$(MODULE)
 DIST     = ../dist
 
