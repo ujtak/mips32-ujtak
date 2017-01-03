@@ -5,26 +5,26 @@ import Text.Printf (printf)
 import Text.Parsec
 import Text.Parsec.String (Parser)
 
--- main :: IO ()
--- main = do
---   srcs <- getArgs
---   let dsts = map (replaceExt "dat") srcs
---   bins <- sequence $ map emitAsm srcs
---   zipWithM_ dumpAsm dsts bins
+main :: IO ()
+main = do
+  srcs <- getArgs
+  dsts <- return $ map (replaceExt "dat") srcs
+  bins <- mapM emitAsm srcs
+  zipWithM_ dumpAsm dsts bins
 
-type HexCode  = [String]
+type BinCode  = String
 
 class Eq a => AsmOp a where
   opTable   :: [(String, a)]
   -- funct: R, opcode: I and J
   -- storaged as string of hex number
   hexTable  :: [(a, Int)]
-  evalOp    :: a -> IO Int
-  parseOp   :: Parser a
 
+  evalOp    :: a -> IO BinCode
   evalOp op = case lookup op hexTable of
-                Just hex -> return hex
+                Just hex -> return $ printf "%06b" hex
                 Nothing  -> die "This operation is not implemented"
+  parseOp   :: Parser a
   parseOp   = choice opParsers
     where opParsers = map (\(a, b) -> try $ string a >> return b) opTable
 
@@ -65,7 +65,6 @@ instance AsmOp AsmOpJ where
 data AsmVal   = Name  String
               | Var   String
               | Imm   Int
-              | Addr  Int -- for j instruction
               deriving Show
 
 data AsmExpr  = Label AsmVal
@@ -115,44 +114,66 @@ parseExpr  =  try parseLabel
     parseOprR = do
       spaces
       op <- parseOpR; spaces
-      x1 <- parseVal; spaces >> char ',' >> spaces
-      x2 <- parseVal; spaces >> char ',' >> spaces
-      x3 <- parseVal; spaces
-      return $ OprR op x1 x2 x3
+      rd <- parseVal; spaces >> char ',' >> spaces
+      rs <- parseVal; spaces >> char ',' >> spaces
+      rt <- parseVal; spaces
+      return $ OprR op rd rs rt
     parseOprI = try parseComma <|> try parseBrace
       where
         parseComma = do
           spaces
           op <- parseOpI; spaces
-          x1 <- parseVal; spaces >> char ',' >> spaces
-          x2 <- parseVal; spaces >> char ',' >> spaces
-          x3 <- parseVal; spaces
-          return $ OprI op x1 x2 x3
+          rs <- parseVal; spaces >> char ',' >> spaces
+          rt <- parseVal; spaces >> char ',' >> spaces
+          cv <- parseVal; spaces
+          return $ OprI op rs rt cv
         parseBrace = do
           spaces
           op <- parseOpI; spaces
-          x1 <- parseVal; spaces >> char ',' >> spaces
-          x2 <- parseVal; spaces
+          rs <- parseVal; spaces >> char ',' >> spaces
+          cv <- parseVal; spaces
           char '(' >> spaces
-          x3 <- parseVal; spaces
+          rt <- parseVal; spaces
           char ')' >> spaces
-          return $ OprI op x1 x2 x3
+          return $ OprI op rs rt cv
     parseOprJ = do
       spaces
       op <- parseOpJ; spaces
-      x1 <- parseVal; spaces
-      return $ OprJ op x1
+      cv <- parseVal; spaces
+      return $ OprJ op cv
 
-dumpAsm :: FilePath -> HexCode -> IO ()
+dumpAsm :: FilePath -> [BinCode] -> IO ()
 dumpAsm dst bin = writeFile dst $ unlines bin
 
--- emitAsm :: FilePath -> IO HexCode
+emitAsm :: FilePath -> IO BinCode
+emitAsm src = do
+  code      <- readFile src
+  codeLines <- return $ lines code
+  binLines  <- mapM evalExpr codeLines
+  return binLines
 
--- evalOpR  :: AsmOpR  -> IO String
--- evalOpI  :: AsmOpI  -> IO String
--- evalOpJ  :: AsmOpJ  -> IO String
--- evalVal  :: AsmVal  -> IO String
--- evalExpr :: AsmExpr -> IO String
+evalOpR :: AsmOpR  -> IO BinCode
+evalOpR = evalOp :: AsmOpR -> IO BinCode
+
+evalOpI :: AsmOpI  -> IO BinCode
+evalOpI = evalOp :: AsmOpI -> IO BinCode
+
+evalOpJ :: AsmOpJ  -> IO BinCode
+evalOpJ = evalOp :: AsmOpJ -> IO BinCode
+
+evalVal :: AsmVal  -> IO BinCode
+evalVal (Name n) =
+evalVal (Var v)  =
+evalVal (Imm i)  =
+
+evalExpr :: AsmExpr -> IO BinCode
+evalExpr (Label l) = return ""
+evalExpr (OprR op rd rs rt) =
+  "000000"++(evalVal rs)++(evalVal rt)++(evalVal rd)++"00000"++(evalOpR op)
+evalExpr (OprI op rs rt cv) =
+  (evalOpI op)++(evalVal rs)++(evalVal rt)++(evalVal cv)
+evalExpr (OprJ op cv) =
+  (evalOpJ op)++(evalVal cv)
 
 replaceExt :: String -> FilePath -> FilePath
 replaceExt new path = body ++ new
