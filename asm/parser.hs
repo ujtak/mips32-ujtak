@@ -1,14 +1,15 @@
+import Control.Monad      (zipWithM_)
 import System.Environment (getArgs)
-import System.Exit (die)
-import System.FilePath (dropExtension)
-import Text.Printf (printf)
+import System.Exit        (die)
+import System.FilePath    (dropExtension)
 import Text.Parsec
 import Text.Parsec.String (Parser)
+import Text.Printf        (printf)
 
 main :: IO ()
 main = do
   srcs <- getArgs
-  dsts <- return $ map (replaceExt "dat") srcs
+  dsts <- return $ map (replaceExt ".dat") srcs
   bins <- mapM emitAsm srcs
   zipWithM_ dumpAsm dsts bins
 
@@ -20,10 +21,10 @@ class Eq a => AsmOp a where
   -- storaged as string of hex number
   hexTable  :: [(a, Int)]
 
-  evalOp    :: a -> IO BinCode
-  evalOp op = case lookup op hexTable of
-                Just hex -> return $ printf "%06b" hex
-                Nothing  -> die "This operation is not implemented"
+  evalOp    :: Int -> a -> BinCode
+  evalOp len op = case lookup op hexTable of
+                    Just hex -> printf ("%0"++(show len)++"b") hex
+                    Nothing  -> ""
   parseOp   :: Parser a
   parseOp   = choice opParsers
     where opParsers = map (\(a, b) -> try $ string a >> return b) opTable
@@ -143,37 +144,57 @@ parseExpr  =  try parseLabel
       return $ OprJ op cv
 
 dumpAsm :: FilePath -> [BinCode] -> IO ()
-dumpAsm dst bin = writeFile dst $ unlines bin
-
-emitAsm :: FilePath -> IO BinCode
+dumpAsm dst bin = writeFile dst formedBin
+  where
+    isValid line = (length line) == 32
+    packedBin = filter isValid bin
+    formedBin = unlines packedBin
+ 
+emitAsm :: FilePath -> IO [BinCode]
 emitAsm src = do
   code      <- readFile src
   codeLines <- return $ lines code
-  binLines  <- mapM evalExpr codeLines
+  lineAsts  <- mapM parseIO codeLines
+  binLines  <- return $ map evalExpr lineAsts
   return binLines
+    where
+      parseIO :: String -> IO AsmExpr
+      parseIO code = case parse parseExpr "asm" code of
+        Right ast -> return ast
+        Left err  -> die "Failed parsing"
 
-evalOpR :: AsmOpR  -> IO BinCode
-evalOpR = evalOp :: AsmOpR -> IO BinCode
+evalOpR :: Int -> AsmOpR -> BinCode
+evalOpR = evalOp :: Int -> AsmOpR -> BinCode
 
-evalOpI :: AsmOpI  -> IO BinCode
-evalOpI = evalOp :: AsmOpI -> IO BinCode
+evalOpI :: Int -> AsmOpI -> BinCode
+evalOpI = evalOp :: Int -> AsmOpI -> BinCode
 
-evalOpJ :: AsmOpJ  -> IO BinCode
-evalOpJ = evalOp :: AsmOpJ -> IO BinCode
+evalOpJ :: Int -> AsmOpJ -> BinCode
+evalOpJ = evalOp :: Int -> AsmOpJ -> BinCode
 
-evalVal :: AsmVal  -> IO BinCode
-evalVal (Name n) =
-evalVal (Var v)  =
-evalVal (Imm i)  =
+-- TODO: Implement dictionary-based evaluation of Name and Var
+evalVal :: Int -> AsmVal  -> BinCode
+evalVal len (Name n) = printf ("%0"++(show len)++"b") (0 :: Int)
+evalVal len (Var v)  = printf ("%0"++(show len)++"b") (0 :: Int)
+evalVal len (Imm i)  = printf ("%0"++(show len)++"b") i
 
-evalExpr :: AsmExpr -> IO BinCode
-evalExpr (Label l) = return ""
-evalExpr (OprR op rd rs rt) =
-  "000000"++(evalVal rs)++(evalVal rt)++(evalVal rd)++"00000"++(evalOpR op)
-evalExpr (OprI op rs rt cv) =
-  (evalOpI op)++(evalVal rs)++(evalVal rt)++(evalVal cv)
-evalExpr (OprJ op cv) =
-  (evalOpJ op)++(evalVal cv)
+evalExpr :: AsmExpr -> BinCode
+evalExpr (Label l) = ""
+
+evalExpr (OprR op rd rs rt) = "000000"
+                           ++ evalVal 5 rs
+                           ++ evalVal 5 rt
+                           ++ evalVal 5 rd
+                           ++ "00000"
+                           ++ evalOpR 6 op
+
+evalExpr (OprI op rs rt cv) = evalOpI 6 op
+                           ++ evalVal 5 rs
+                           ++ evalVal 5 rt
+                           ++ evalVal 16 cv
+
+evalExpr (OprJ op cv) = evalOpJ 6 op
+                     ++ evalVal 26 cv
 
 replaceExt :: String -> FilePath -> FilePath
 replaceExt new path = body ++ new
