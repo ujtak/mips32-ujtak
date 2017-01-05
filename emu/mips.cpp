@@ -6,7 +6,6 @@
 
 using std::ifstream;
 using std::ofstream;
-using std::stoi;
 
 MIPS::MIPS()
 {
@@ -25,7 +24,7 @@ void MIPS::read_inst(string src)
 
 int MIPS::exec_step()
 {
-  auto stob = [](string x) -> int { return stoi(x, nullptr, 2); };
+  auto stob = [](string x) -> int { return std::stoi(x, nullptr, 2); };
 
   string inst   = mem_inst[pcounter/4];
 
