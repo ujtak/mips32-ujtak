@@ -17,6 +17,10 @@ public:
   int exec_cycle();
   int write_data(string dst);
 
+  vector<string>  mem_inst;
+  vector<int>     mem_data;
+  vector<int>     reg_file;
+
 private:
   const int dwidth  = 32;
   const int isize   = 8;
@@ -26,6 +30,8 @@ private:
   const int shamt   = 5;
   const int funct   = 5;
 
+  int pcounter = 0;
 };
 
+#include "mips.cpp"
 #endif
