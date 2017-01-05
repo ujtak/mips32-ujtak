@@ -84,13 +84,13 @@ void MIPS::write_data(string dst)
 
 inline void MIPS::_and(int rd, int rs, int rt)
 {
-  reg_file[rd] = reg_file[rs] && reg_file[rt];
+  reg_file[rd] = reg_file[rs] & reg_file[rt];
   pcounter = pcounter + 4;
 }
 
 inline void MIPS::_or(int rd, int rs, int rt)
 {
-  reg_file[rd] = reg_file[rs] || reg_file[rt];
+  reg_file[rd] = reg_file[rs] | reg_file[rt];
   pcounter = pcounter + 4;
 }
 
