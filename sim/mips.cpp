@@ -1,16 +1,17 @@
-#include <iostream>
+#include "mips.hpp"
 
-class MIPS
+MIPS::MIPS()
 {
-  const int dwidth;
-  const int isize;
-  const int rsize;
-  const int dsize;
-  const int opwidth;
-
 }
 
-int main(void)
+int MIPS::read_inst(string src)
 {
-  return 0;
+}
+
+int MIPS::exec_cycle()
+{
+}
+
+int MIPS::write_data(string dst)
+{
 }
