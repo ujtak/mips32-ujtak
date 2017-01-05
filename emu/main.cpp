@@ -10,7 +10,7 @@ struct config {
   string prog_name;
   string inst_file;
   string data_file;
-  int num_cycle;
+  int num_step;
 } conf;
 
 void usage(int exitcode)
@@ -20,6 +20,8 @@ void usage(int exitcode)
         "\n"
         "<file>     binary source to execute\n"
         "  -h       print this help\n"
+        "  -f       output filename\n"
+        "  -c       specify the number of cycles\n"
     <<  std::endl;
 
   exit(exitcode);
@@ -30,7 +32,7 @@ void parseopt(int argc, char **argv)
   conf.prog_name = argv[0];
   conf.inst_file = argv[argc-1];
   conf.data_file = "mem_data_true.dat";
-  conf.num_cycle = 0;
+  conf.num_step = 0;
 
   while (1) {
     int opt = getopt(argc, argv, "ho:c:");
@@ -39,7 +41,7 @@ void parseopt(int argc, char **argv)
 
     switch (opt) {
       case 'o': conf.data_file = optarg; break;
-      case 'c': conf.num_cycle = std::stoi(optarg); break;
+      case 'c': conf.num_step = std::stoi(optarg); break;
       case 'h': usage(0);
       default:  usage(1);
     }
@@ -57,14 +59,14 @@ int main(int argc, char **argv)
 
   cpu.read_inst(conf.inst_file);
 
-  if (0 < conf.num_cycle)
-    for (int i=0; i < conf.num_cycle; i++) {
-      int ack = cpu.exec_cycle();
+  if (0 < conf.num_step)
+    for (int i=0; i < conf.num_step; i++) {
+      int ack = cpu.exec_step();
       if (ack != 0) break;
     }
   else
     while (1) {
-      int ack = cpu.exec_cycle();
+      int ack = cpu.exec_step();
       if (ack != 0) break;
     }
 

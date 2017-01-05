@@ -10,27 +10,35 @@ using std::string;
 class MIPS
 {
 public:
+  static const int dwidth = 32;
+  static const int isize  = 8;
+  static const int dsize  = 8;
+  static const int rsize  = 5;
+  static const int oplen  = 6;
+  static const int shlen  = 5;
+  static const int fnlen  = 5;
 
   MIPS();
 
-  int read_inst(string src);
-  int exec_cycle();
-  int write_data(string dst);
+  void read_inst(string src);
+  int  exec_step();
+  void write_data(string dst);
+
+private:
+  int pcounter = 0;
 
   vector<string>  mem_inst;
   vector<int>     mem_data;
   vector<int>     reg_file;
 
-private:
-  const int dwidth  = 32;
-  const int isize   = 8;
-  const int dsize   = 8;
-  const int rsize   = 5;
-  const int opwidth = 6;
-  const int shamt   = 5;
-  const int funct   = 5;
-
-  int pcounter = 0;
+  inline void _and(int rd, int rs, int rt);
+  inline void _or(int rd, int rs, int rt);
+  inline void _add(int rd, int rs, int rt);
+  inline void _sub(int rd, int rs, int rt);
+  inline void _lw(int rs, int rt, int cv);
+  inline void _sw(int rs, int rt, int cv);
+  inline void _beq(int rs, int rt, int cv);
+  inline void _j(int cv);
 };
 
 #include "mips.cpp"
