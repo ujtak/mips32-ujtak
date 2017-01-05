@@ -181,6 +181,7 @@ evalVal len (Imm i)  = printf ("%0"++(show len)++"b") i
 evalExpr :: AsmExpr -> BinCode
 evalExpr (Label l) = ""
 
+-- TODO: make shamt enabled
 evalExpr (OprR op rd rs rt) = "000000"
                            ++ evalVal 5 rs
                            ++ evalVal 5 rt
