@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
   parseopt(argc, argv);
 
-  cpu.read_inst(conf.inst_file);
+  cpu.load_inst(conf.inst_file);
 
   if (0 < conf.num_step)
     for (int i=0; i < conf.num_step; i++) {
@@ -65,12 +65,9 @@ int main(int argc, char **argv)
       if (ack != 0) break;
     }
   else
-    while (1) {
-      int ack = cpu.exec_step();
-      if (ack != 0) break;
-    }
+    cpu.exec();
 
-  cpu.write_data(conf.data_file);
+  cpu.save_data(conf.data_file);
 
   return 0;
 }

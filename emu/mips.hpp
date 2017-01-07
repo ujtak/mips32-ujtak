@@ -20,9 +20,15 @@ public:
 
   MIPS();
 
-  void read_inst(string src);
-  int  exec_step();
-  void write_data(string dst);
+  void load_inst(string src);
+  void load_data(string src);
+  void load_reg(string src);
+
+  void save_reg(string dst);
+  void save_data(string dst);
+
+  int exec();
+  int exec_step();
 
 private:
   int pcounter = 0;
@@ -39,6 +45,11 @@ private:
   inline void _sw(int rs, int rt, int cv);
   inline void _beq(int rs, int rt, int cv);
   inline void _j(int cv);
+
+  template <typename T>
+  void load(vector<T> vec, string dst);
+  template <typename T>
+  void save(vector<T> vec, string dst);
 };
 
 #include "mips.cpp"
