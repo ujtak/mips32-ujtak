@@ -59,7 +59,7 @@ int MIPS::exec_step()
   int rsR    = stob(inst.substr(oplen,               rsize));
   int rtR    = stob(inst.substr(oplen+rsize,         rsize));
   int rdR    = stob(inst.substr(oplen+2*rsize,       rsize));
-  int shamt  = stob(inst.substr(oplen+3*rsize,       shlen));
+  // int shamt  = stob(inst.substr(oplen+3*rsize,       shlen));
   int funct  = stob(inst.substr(oplen+3*rsize+shlen, fnlen));
 
   int rsI    = stob(inst.substr(oplen,         rsize));
