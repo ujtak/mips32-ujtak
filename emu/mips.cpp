@@ -103,7 +103,6 @@ int MIPS::exec_step()
       break;
 
     // I-Type
-    // TODO: check the order of rs and rt
     case 0x4:  _beq(rsI, rtI, cvI); break;
     case 0x23: _lw(rsI, rtI, cvI);  break;
     case 0x2b: _sw(rsI, rtI, cvI);  break;
