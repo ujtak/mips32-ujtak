@@ -1,8 +1,8 @@
-import Control.Monad      (zipWithM_)
+import Control.Monad      (liftM, zipWithM_)
 import System.Environment (getArgs)
 import System.Exit        (die)
 import System.FilePath    (dropExtension)
-import Text.Parsec
+import Text.Parsec hiding (spaces)
 import Text.Parsec.String (Parser)
 import Text.Printf        (printf)
 
@@ -12,6 +12,10 @@ main = do
   dsts <- return $ map (replaceExt ".dat") srcs
   bins <- mapM emitAsm srcs
   zipWithM_ dumpAsm dsts bins
+
+------------------------------------------------------------
+-- Type Definitions
+------------------------------------------------------------
 
 type BinCode  = String
 
@@ -63,17 +67,39 @@ instance AsmOp AsmOpJ where
   hexTable  = [ (J, 0x2)
               ]
 
-data AsmVal   = Name  String
-              | Var   String
-              | Imm   Int
-              deriving Show
+data AsmVal   = Imm   Int
+              | Var   Int
+              | Name  String
+              deriving (Show, Eq)
 
-data AsmExpr  = Label AsmVal
+varTable :: [(String, Int)]
+varTable = [ ("$zero", 0), ("$at", 1),  ("$v0", 2),  ("$v1", 3)
+           , ("$a0", 4),   ("$a1", 5),  ("$a2", 6),  ("$a3", 7)
+           , ("$t0", 8),   ("$t1", 9),  ("$t2", 10), ("$t3", 11)
+           , ("$t4", 12),  ("$t5", 13), ("$t6", 14), ("$t7", 15)
+           , ("$s0", 16),  ("$s1", 17), ("$s2", 18), ("$s3", 19)
+           , ("$s4", 20),  ("$s5", 21), ("$s6", 22), ("$s7", 23)
+           , ("$t8", 24),  ("$t9", 25), ("$k0", 26), ("$k1", 27)
+           , ("$gp", 28),  ("$sp", 29), ("$fp", 30), ("$ra", 31)
+           ]
+
+type NameEnv = [(AsmVal, Int)]
+
+data AsmExpr  = Ignore
+              | Label AsmVal
               | OprR  AsmOpR AsmVal AsmVal AsmVal
               | OprI  AsmOpI AsmVal AsmVal AsmVal
               | OprJ  AsmOpJ AsmVal
-              deriving Show
+              deriving (Show, Eq)
 
+------------------------------------------------------------
+-- Parser Definitions
+------------------------------------------------------------
+
+runParse :: String -> AsmExpr
+runParse code = case parse parseExpr "asm" code of
+  Right ast -> ast
+  Left err  -> Ignore
 
 parseOpR :: Parser AsmOpR
 parseOpR = parseOp :: Parser AsmOpR
@@ -84,22 +110,35 @@ parseOpI = parseOp :: Parser AsmOpI
 parseOpJ :: Parser AsmOpJ
 parseOpJ = parseOp :: Parser AsmOpJ
 
+spaces :: Parser ()
+spaces = skipMany (space <|> tab)
+
 parseVal :: Parser AsmVal
 parseVal  =  parseName
          <|> parseVar
          <|> parseImm
   where
-    parseName = do
-      first <- letter <|> char '_'
-      rest  <- many (letter <|> digit <|> char '_')
-      return $ Name $ first : rest
-    parseVar  = do
-      first <- char '$'
-      rest  <- many (letter <|> digit <|> char '_')
-      return $ Var $ first : rest
     parseImm  = do
       num <- many1 digit
       return $ Imm $ read num
+    parseVar  = try parseStr <|> try parseInt
+      where
+        parseStr = do
+          first  <- char '$'
+          second <- letter
+          rest   <- many (letter <|> digit)
+          var    <- return $ first : second : rest
+          return $ Var $ case lookup var varTable of
+                           Just num -> num
+        parseInt = do
+          first <- char '$'
+          rest <- many digit
+          return $ Var $ read rest
+    parseName = do
+      first <- letter <|> char '_'
+      rest  <- many (letter <|> digit <|> char '_')
+      name  <- return $ first : rest
+      return $ Name name
 
 parseExpr :: Parser AsmExpr
 parseExpr  =  try parseLabel
@@ -107,6 +146,11 @@ parseExpr  =  try parseLabel
           <|> try parseOprI
           <|> try parseOprJ
   where
+    parseIgnore = do
+      spaces
+      char '#' <|> space
+      spaces
+      return Ignore
     parseLabel = do
       spaces
       name <- parseVal
@@ -143,25 +187,9 @@ parseExpr  =  try parseLabel
       cv <- parseVal; spaces
       return $ OprJ op cv
 
-dumpAsm :: FilePath -> [BinCode] -> IO ()
-dumpAsm dst bin = writeFile dst formedBin
-  where
-    isValid line = (length line) == 32
-    packedBin = filter isValid bin
-    formedBin = unlines packedBin
- 
-emitAsm :: FilePath -> IO [BinCode]
-emitAsm src = do
-  code      <- readFile src
-  codeLines <- return $ lines code
-  lineAsts  <- mapM parseIO codeLines
-  binLines  <- return $ map evalExpr lineAsts
-  return binLines
-    where
-      parseIO :: String -> IO AsmExpr
-      parseIO code = case parse parseExpr "asm" code of
-        Right ast -> return ast
-        Left err  -> die "Failed parsing"
+------------------------------------------------------------
+-- Evaluation Functions
+------------------------------------------------------------
 
 evalOpR :: Int -> AsmOpR -> BinCode
 evalOpR = evalOp :: Int -> AsmOpR -> BinCode
@@ -172,30 +200,68 @@ evalOpI = evalOp :: Int -> AsmOpI -> BinCode
 evalOpJ :: Int -> AsmOpJ -> BinCode
 evalOpJ = evalOp :: Int -> AsmOpJ -> BinCode
 
--- TODO: Implement dictionary-based evaluation of Name and Var
-evalVal :: Int -> AsmVal  -> BinCode
-evalVal len (Name n) = printf ("%0"++(show len)++"b") (0 :: Int)
-evalVal len (Var v)  = printf ("%0"++(show len)++"b") (0 :: Int)
-evalVal len (Imm i)  = printf ("%0"++(show len)++"b") i
+evalVal :: Int -> NameEnv -> AsmVal -> BinCode
+evalVal len env (Imm i)  = printf ("%0"++(show len)++"b") i
+evalVal len env (Var v)  = printf ("%0"++(show len)++"b") v
+evalVal len env (Name n) = printf ("%0"++(show len)++"b") $ findEnv env (Name n)
 
-evalExpr :: AsmExpr -> BinCode
-evalExpr (Label l) = ""
+evalExpr :: NameEnv -> AsmExpr -> BinCode
+evalExpr env (Label l) = ""
+evalExpr env (Ignore) = ""
 
 -- TODO: make shamt enabled
-evalExpr (OprR op rd rs rt) = "000000"
-                           ++ evalVal 5 rs
-                           ++ evalVal 5 rt
-                           ++ evalVal 5 rd
-                           ++ "00000"
-                           ++ evalOpR 6 op
+evalExpr env (OprR op rd rs rt) = "000000"
+                               ++ evalVal 5 env rs
+                               ++ evalVal 5 env rt
+                               ++ evalVal 5 env rd
+                               ++ "00000"
+                               ++ evalOpR 6 op
 
-evalExpr (OprI op rs rt cv) = evalOpI 6 op
-                           ++ evalVal 5 rs
-                           ++ evalVal 5 rt
-                           ++ evalVal 16 cv
+evalExpr env (OprI op rs rt cv) = evalOpI 6  op
+                               ++ evalVal 5  env rs
+                               ++ evalVal 5  env rt
+                               ++ evalVal 16 env cv
 
-evalExpr (OprJ op cv) = evalOpJ 6 op
-                     ++ evalVal 26 cv
+evalExpr env (OprJ op cv) = evalOpJ 6  op
+                         ++ evalVal 26 env cv
+
+------------------------------------------------------------
+-- Output Functions
+------------------------------------------------------------
+
+nullEnv :: NameEnv
+nullEnv = []
+
+makeEnv :: (AsmExpr, Int) -> NameEnv -> NameEnv
+makeEnv (Label name, line) env = (name, line) : env
+makeEnv (_, _) env = env
+
+findEnv :: NameEnv -> AsmVal -> Int
+findEnv env name = case lookup name env of
+                     Just line -> line
+                     Nothing   -> 0
+
+dumpAsm :: FilePath -> [BinCode] -> IO ()
+dumpAsm dst bin = writeFile dst formedBin
+  where
+    isValid line = (length line) == 32
+    packedBin = filter isValid bin
+    formedBin = unlines packedBin
+
+countInst :: AsmExpr -> [Int] -> [Int]
+countInst (Label l) (x:xs) = x : (x:xs)
+countInst Ignore    (x:xs) = x : (x:xs)
+countInst _         (x:xs) = (x+1) : (x:xs)
+
+emitAsm :: FilePath -> IO [BinCode]
+emitAsm src = do
+  codes <- liftM lines $ readFile src
+  let asts = map runParse codes
+      nums = reverse $ foldr countInst (0:[]) $ reverse asts
+      env  = foldr makeEnv nullEnv $ zip asts nums
+      bins = map (evalExpr env) asts
+  mapM_ print $ zip3 nums bins asts
+  return bins
 
 replaceExt :: String -> FilePath -> FilePath
 replaceExt new path = body ++ new

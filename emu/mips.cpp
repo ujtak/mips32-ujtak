@@ -175,7 +175,7 @@ inline void MIPS::_lw(int rs, int rt, int cv)
               << cv << "(" << "$" << rs << ")"
               << std::endl;
 
-  reg_file[rt] = mem_data[ reg_file[rs]+cv ];
+  reg_file[rt] = mem_data[ (reg_file[rs]+cv)/4 ];
 }
 
 inline void MIPS::_sw(int rs, int rt, int cv)
@@ -186,7 +186,7 @@ inline void MIPS::_sw(int rs, int rt, int cv)
               << cv << "(" << "$" << rs << ")"
               << std::endl;
 
-  mem_data[ reg_file[rs]+cv ] = reg_file[rt];
+  mem_data[ (reg_file[rs]+cv)/4 ] = reg_file[rt];
 }
 
 inline void MIPS::_beq(int rs, int rt, int cv)
@@ -195,7 +195,7 @@ inline void MIPS::_beq(int rs, int rt, int cv)
     std::cout << "  " << "beq "
               << "$" << rs << ", "
               << "$" << rt << ", "
-              << "$" << cv << std::endl;
+              << cv << std::endl;
 
   if (reg_file[rs] == reg_file[rt])
     pcounter = pcounter + 4 * cv;
