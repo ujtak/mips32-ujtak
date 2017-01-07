@@ -175,10 +175,10 @@ parseExpr  =  try parseLabel
         parseBrace = do
           spaces
           op <- parseOpI; spaces
-          rs <- parseVal; spaces >> char ',' >> spaces
+          rt <- parseVal; spaces >> char ',' >> spaces
           cv <- parseVal; spaces
           char '(' >> spaces
-          rt <- parseVal; spaces
+          rs <- parseVal; spaces
           char ')' >> spaces
           return $ OprI op rs rt cv
     parseOprJ = do

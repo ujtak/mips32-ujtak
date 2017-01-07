@@ -11,7 +11,7 @@ main:
     lw $t3, 0($t0)
     add $t2, $t2, $t3
     add $t0, $t0, $t1
-    beq $t2, $t7, done
+    beq $t2, $t7, 1
     j loop
   done:
     sw $t2, 12($zero)
