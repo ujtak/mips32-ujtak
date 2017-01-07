@@ -126,7 +126,7 @@ int MIPS::exec_step()
 inline void MIPS::_and(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  and "
+    std::cout << "  " << "and "
               << "$" << rd << ", "
               << "$" << rs << ", "
               << "$" << rt << std::endl;
@@ -137,7 +137,7 @@ inline void MIPS::_and(int rd, int rs, int rt)
 inline void MIPS::_or(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  or "
+    std::cout << "  " << "or "
               << "$" << rd << ", "
               << "$" << rs << ", "
               << "$" << rt << std::endl;
@@ -148,7 +148,7 @@ inline void MIPS::_or(int rd, int rs, int rt)
 inline void MIPS::_add(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  add "
+    std::cout << "  " << "add "
               << "$" << rd << ", "
               << "$" << rs << ", "
               << "$" << rt << std::endl;
@@ -159,7 +159,7 @@ inline void MIPS::_add(int rd, int rs, int rt)
 inline void MIPS::_sub(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  sub "
+    std::cout << "  " << "sub "
               << "$" << rd << ", "
               << "$" << rs << ", "
               << "$" << rt << std::endl;
@@ -170,7 +170,7 @@ inline void MIPS::_sub(int rd, int rs, int rt)
 inline void MIPS::_lw(int rs, int rt, int cv)
 {
   if (verbose)
-    std::cout << "  lw "
+    std::cout << "  " << "lw "
               << "$" << rt << ", "
               << cv << "(" << "$" << rs << ")"
               << std::endl;
@@ -181,7 +181,7 @@ inline void MIPS::_lw(int rs, int rt, int cv)
 inline void MIPS::_sw(int rs, int rt, int cv)
 {
   if (verbose)
-    std::cout << "  sw "
+    std::cout << "  " << "sw "
               << "$" << rt << ", "
               << cv << "(" << "$" << rs << ")"
               << std::endl;
@@ -192,7 +192,7 @@ inline void MIPS::_sw(int rs, int rt, int cv)
 inline void MIPS::_beq(int rs, int rt, int cv)
 {
   if (verbose)
-    std::cout << "  beq "
+    std::cout << "  " << "beq "
               << "$" << rs << ", "
               << "$" << rt << ", "
               << "$" << cv << std::endl;
@@ -204,7 +204,7 @@ inline void MIPS::_beq(int rs, int rt, int cv)
 inline void MIPS::_j(int cv)
 {
   if (verbose)
-    std::cout << "  j " << cv << std::endl;
+    std::cout << "  " << "j " << cv << std::endl;
 
   pcounter = (pcounter & 0xF0000000)
            | ((4 * cv) & 0x0FFFFFFF);
