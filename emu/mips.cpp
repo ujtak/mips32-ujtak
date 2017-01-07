@@ -86,6 +86,7 @@ int MIPS::exec_step()
 
   if (verbose && pcounter == 0)
     std::cout << "instruction:" << std::endl;
+
   pcounter = pcounter + 4;
 
   switch (opcode) {
