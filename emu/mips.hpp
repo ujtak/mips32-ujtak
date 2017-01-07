@@ -11,14 +11,14 @@ class MIPS
 {
 public:
   static const int dwidth = 32;
-  static const int isize  = 8;
-  static const int dsize  = 8;
+  static const int isize  = 2;// 8;
+  static const int dsize  = 4;// 8;
   static const int rsize  = 5;
   static const int oplen  = 6;
   static const int shlen  = 5;
-  static const int fnlen  = 5;
+  static const int fnlen  = 6;
 
-  MIPS();
+  MIPS(bool verbose=false);
 
   void load_inst(string src);
   void load_data(string src);
@@ -31,6 +31,7 @@ public:
   int exec_step();
 
 private:
+  bool verbose = false;
   int pcounter = 0;
 
   vector<string>  mem_inst;
@@ -47,7 +48,7 @@ private:
   inline void _j(int cv);
 
   template <typename T>
-  void load(vector<T> vec, string dst);
+  void load(vector<T> &vec, string dst);
   template <typename T>
   void save(vector<T> vec, string dst);
 };
