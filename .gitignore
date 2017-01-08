@@ -7,7 +7,6 @@ log.txt
 *.com
 *.vstf
 *.dat
-!*_true.dat
 Makefile.dep
 work/
 transcript

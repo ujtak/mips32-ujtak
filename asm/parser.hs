@@ -1,4 +1,5 @@
 import Control.Monad      (liftM, zipWithM_)
+import Data.Bits
 import System.Environment (getArgs)
 import System.Exit        (die)
 import System.FilePath    (dropExtension)
@@ -203,27 +204,42 @@ evalOpJ = evalOp :: Int -> AsmOpJ -> BinCode
 evalVal :: Int -> NameEnv -> AsmVal -> BinCode
 evalVal len env (Imm i)  = printf ("%0"++(show len)++"b") i
 evalVal len env (Var v)  = printf ("%0"++(show len)++"b") v
-evalVal len env (Name n) = printf ("%0"++(show len)++"b") $ findEnv env (Name n)
+evalVal len env (Name n) = printf "%d" $ findEnv env (Name n)
 
-evalExpr :: NameEnv -> AsmExpr -> BinCode
-evalExpr env (Label l) = ""
-evalExpr env (Ignore) = ""
+evalExpr :: NameEnv -> Int -> AsmExpr -> BinCode
+evalExpr env line (Label l) = ""
+evalExpr env line (Ignore) = ""
 
--- TODO: make shamt enabled
-evalExpr env (OprR op rd rs rt) = "000000"
-                               ++ evalVal 5 env rs
-                               ++ evalVal 5 env rt
-                               ++ evalVal 5 env rd
-                               ++ "00000"
-                               ++ evalOpR 6 op
+evalExpr env line (OprR op rd rs rt)
+  = "000000"
+ ++ evalVal 5 env rs
+ ++ evalVal 5 env rt
+ ++ evalVal 5 env rd
+ ++ "00000"
+ ++ evalOpR 6 op
 
-evalExpr env (OprI op rs rt cv) = evalOpI 6  op
-                               ++ evalVal 5  env rs
-                               ++ evalVal 5  env rt
-                               ++ evalVal 16 env cv
+evalExpr env line (OprI Beq rs rt cv)
+  = evalOpI 6  Beq
+ ++ evalVal 5  env rs
+ ++ evalVal 5  env rt
+ ++ evalVal_16_env_cv'
+  where
+    cv'  = (read $ evalVal 16 env cv) - (line+1)
+    evalVal_16_env_cv' = printf "%016b" cv'
 
-evalExpr env (OprJ op cv) = evalOpJ 6  op
-                         ++ evalVal 26 env cv
+evalExpr env line (OprI op rs rt cv)
+  = evalOpI 6  op
+ ++ evalVal 5  env rs
+ ++ evalVal 5  env rt
+ ++ evalVal 16 env cv
+
+evalExpr env line (OprJ op cv)
+  = evalOpJ 6  op
+ ++ evalVal_26_env_cv'
+  where
+    cv' = ((line+1)                   .&. 0xf0000000)
+        + ((read $ evalVal 26 env cv) .&. 0x0fffffff)
+    evalVal_26_env_cv' = printf "%026b" cv'
 
 ------------------------------------------------------------
 -- Output Functions
@@ -259,7 +275,8 @@ emitAsm src = do
   let asts = map runParse codes
       nums = reverse $ foldr countInst (0:[]) $ reverse asts
       env  = foldr makeEnv nullEnv $ zip asts nums
-      bins = map (evalExpr env) asts
+      bins = zipWith (evalExpr env) nums asts
+  print env
   mapM_ print $ zip3 nums bins asts
   return bins
 
