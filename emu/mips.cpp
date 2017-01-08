@@ -1,5 +1,6 @@
 #ifdef _MIPS_H
 
+#include <cstdio>
 #include <fstream>
 #include <cmath>
 
@@ -126,10 +127,7 @@ int MIPS::exec_step()
 inline void MIPS::_and(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  " << "and "
-              << "$" << rd << ", "
-              << "$" << rs << ", "
-              << "$" << rt << std::endl;
+    printf("%5d:  and $%d, $%d, $%d\n", pcounter/4-1, rd, rs, rt);
 
   reg_file[rd] = reg_file[rs] & reg_file[rt];
 }
@@ -137,10 +135,7 @@ inline void MIPS::_and(int rd, int rs, int rt)
 inline void MIPS::_or(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  " << "or "
-              << "$" << rd << ", "
-              << "$" << rs << ", "
-              << "$" << rt << std::endl;
+    printf("%5d:  or $%d, $%d, $%d\n", pcounter/4-1, rd, rs, rt);
 
   reg_file[rd] = reg_file[rs] | reg_file[rt];
 }
@@ -148,10 +143,7 @@ inline void MIPS::_or(int rd, int rs, int rt)
 inline void MIPS::_add(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  " << "add "
-              << "$" << rd << ", "
-              << "$" << rs << ", "
-              << "$" << rt << std::endl;
+    printf("%5d:  add $%d, $%d, $%d\n", pcounter/4-1, rd, rs, rt);
 
   reg_file[rd] = reg_file[rs] + reg_file[rt];
 }
@@ -159,10 +151,7 @@ inline void MIPS::_add(int rd, int rs, int rt)
 inline void MIPS::_sub(int rd, int rs, int rt)
 {
   if (verbose)
-    std::cout << "  " << "sub "
-              << "$" << rd << ", "
-              << "$" << rs << ", "
-              << "$" << rt << std::endl;
+    printf("%5d:  sub $%d, $%d, $%d\n", pcounter/4-1, rd, rs, rt);
 
   reg_file[rd] = reg_file[rs] - reg_file[rt];
 }
@@ -170,10 +159,7 @@ inline void MIPS::_sub(int rd, int rs, int rt)
 inline void MIPS::_lw(int rs, int rt, int cv)
 {
   if (verbose)
-    std::cout << "  " << "lw "
-              << "$" << rt << ", "
-              << cv << "(" << "$" << rs << ")"
-              << std::endl;
+    printf("%5d:  lw $%d, %d($%d)\n", pcounter/4-1, rt, cv, rs);
 
   reg_file[rt] = mem_data[ (reg_file[rs]+cv)/4 ];
 }
@@ -181,10 +167,7 @@ inline void MIPS::_lw(int rs, int rt, int cv)
 inline void MIPS::_sw(int rs, int rt, int cv)
 {
   if (verbose)
-    std::cout << "  " << "sw "
-              << "$" << rt << ", "
-              << cv << "(" << "$" << rs << ")"
-              << std::endl;
+    printf("%5d:  sw $%d, %d($%d)\n", pcounter/4-1, rt, cv, rs);
 
   mem_data[ (reg_file[rs]+cv)/4 ] = reg_file[rt];
 }
@@ -192,10 +175,7 @@ inline void MIPS::_sw(int rs, int rt, int cv)
 inline void MIPS::_beq(int rs, int rt, int cv)
 {
   if (verbose)
-    std::cout << "  " << "beq "
-              << "$" << rs << ", "
-              << "$" << rt << ", "
-              << cv << std::endl;
+    printf("%5d:  beq $%d, $%d, %d\n", pcounter/4-1, rs, rt, cv);
 
   if (reg_file[rs] == reg_file[rt])
     pcounter = pcounter + 4 * cv;
@@ -204,7 +184,7 @@ inline void MIPS::_beq(int rs, int rt, int cv)
 inline void MIPS::_j(int cv)
 {
   if (verbose)
-    std::cout << "  " << "j " << cv << std::endl;
+    printf("%5d:  j %d\n", pcounter/4-1, cv);
 
   pcounter = (pcounter & 0xF0000000)
            | ((4 * cv) & 0x0FFFFFFF);

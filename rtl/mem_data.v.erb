@@ -28,5 +28,10 @@ module mem_data(/*AUTOARG*/);
     addr_reg <= mem_addr;
   end
 
+  integer i;
+  initial
+    for (i = 0; i < WORDS; i = i + 1)
+      mem[i] = 0;
+
 endmodule
 

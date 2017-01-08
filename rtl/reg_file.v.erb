@@ -28,5 +28,10 @@ module reg_file(/*AUTOARG*/);
     if (reg_write)
       file[write_reg] <= write_data;
 
+  integer i;
+  initial
+    for (i = 0; i < WORDS; i = i + 1)
+      file[i] = 0;
+
 endmodule
 

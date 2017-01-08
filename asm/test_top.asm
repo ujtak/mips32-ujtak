@@ -30,7 +30,11 @@ skip:
   sub $t3, $t2, $t1
   add $t4, $t2, $t1
   or $t5, $t3, $t4
-  # won't skip to skip:
-  beq $t5, $t7, skip
+  # won't skip to dumb:
+  beq $t5, $t7, dumb
   sw $t5, 8($zero)
+
+dumb:
+  add $t5, $t5, $t5
+  add $t5, $t5, $t5
 

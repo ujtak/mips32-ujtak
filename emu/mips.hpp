@@ -11,8 +11,8 @@ class MIPS
 {
 public:
   static const int dwidth = 32;
-  static const int isize  = 4;//8;
-  static const int dsize  = 4;//8;
+  static const int isize  = 8;
+  static const int dsize  = 8;
   static const int rsize  = 5;
   static const int oplen  = 6;
   static const int shlen  = 5;

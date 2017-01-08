@@ -1,6 +1,7 @@
 % load "parameters.rb"
-% inst_file = ""
-% max_step = 256
+% inst_file = "tests/test_top.dat"
+% data_file = "tests/mem_data.dat"
+% max_step = 20
 
 `timescale 1ns/1ps
 
@@ -32,6 +33,7 @@ module test_top();
     xrst = 1;
     soft_reset = 1;
     init_mem_inst;
+    init_mem_data;
     #(STEP);
 
     soft_reset = 0;
@@ -61,7 +63,14 @@ module test_top();
   task init_mem_inst;
     integer i;
     begin // {{{
-      $readmemh("<%=inst_file%>", dut0.mem_inst.mem);
+      $readmemb("<%=inst_file%>", dut0.mem_inst.mem);
+    end // }}}
+  endtask
+
+  task init_mem_data;
+    integer i;
+    begin // {{{
+      $readmemh("<%=data_file%>", dut0.mem_data.mem);
     end // }}}
   endtask
 
@@ -69,9 +78,9 @@ module test_top();
     integer fd;
     integer i;
     begin // {{{
-      fd = $fopen("test_top.dat", "w");
+      fd = $fopen("mem_data_test.dat", "w");
       for (i=0; i<2**DSIZE; i=i+1)
-        $fdisplay(fd, "%0x", dut0.mem_data.mem[i]);
+        $fdisplay(fd, "%0d", dut0.mem_data.mem[i]);
       $fclose(fd);
     end // }}}
   endtask
@@ -81,8 +90,16 @@ module test_top();
   begin
     #(STEP/2-1);
     $display(
-      "%d: ", $time/STEP,
+      "%3d: ", $time/STEP,
       "| ",
+      "%3d ", dut0.reg_file.file[8],
+      "%3d ", dut0.reg_file.file[9],
+      "%3d ", dut0.reg_file.file[10],
+      "%3d ", dut0.reg_file.file[11],
+      "%3d ", dut0.reg_file.file[12],
+      "%3d ", dut0.reg_file.file[13],
+      "%3d ", dut0.reg_file.file[14],
+      "%3d ", dut0.reg_file.file[15],
     );
     #(STEP/2+1);
   end
