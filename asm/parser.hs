@@ -23,7 +23,7 @@ type BinCode  = String
 class Eq a => AsmOp a where
   opTable   :: [(String, a)]
   -- funct: R, opcode: I and J
-  -- storaged as string of hex number
+  -- storaged as Int of hex number
   hexTable  :: [(a, Int)]
 
   evalOp    :: Int -> a -> BinCode
@@ -225,7 +225,9 @@ evalExpr env line (OprI Beq rs rt cv)
  ++ evalVal_16_env_cv'
   where
     cv'  = (read $ evalVal 16 env cv) - (line+1)
-    evalVal_16_env_cv' = printf "%016b" cv'
+    comp len x | x < 0     = ((-x) `xor` (2^len - 1)) + 1
+               | otherwise = x
+    evalVal_16_env_cv' = printf "%016b" $ comp 16 cv'
 
 evalExpr env line (OprI op rs rt cv)
   = evalOpI 6  op

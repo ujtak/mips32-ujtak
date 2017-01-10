@@ -7,7 +7,8 @@ module mem_data(/*AUTOARG*/);
   /*AUTOINPUT*/
   input                     clk;
   input                     mem_we;
-  input [DSIZE-1:0]         mem_addr;
+  // input [DSIZE-1:0]         mem_addr;
+  input [DWIDTH-1:0]         mem_addr;
   input signed [DWIDTH-1:0] write_data;
 
   /*AUTOOUTPUT*/
@@ -19,12 +20,12 @@ module mem_data(/*AUTOARG*/);
   reg signed [DWIDTH-1:0] mem [WORDS-1:0];
   reg [DWIDTH-1:0]        addr_reg;
 
-  assign read_data = mem[addr_reg];
+  assign read_data = mem[addr_reg[DSIZE-1:0]];
 
   always @(posedge clk)
   begin
     if(mem_we)
-      mem[mem_addr] <= write_data;
+      mem[mem_addr[DSIZE-1:0]] <= write_data;
     addr_reg <= mem_addr;
   end
 
