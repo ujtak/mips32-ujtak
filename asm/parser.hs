@@ -93,14 +93,16 @@ data AsmExpr  = Ignore
               | OprJ  AsmOpJ AsmVal
               deriving (Show, Eq)
 
+type AsmProg = [AsmExpr]
+
 ------------------------------------------------------------
 -- Parser Definitions
 ------------------------------------------------------------
 
-runParse :: String -> AsmExpr
-runParse code = case parse parseExpr "asm" code of
-  Right ast -> ast
-  Left err  -> Ignore
+runParse :: String -> IO AsmProg
+runParse code = case parse parseProg "asm" code of
+  Right ast -> return ast
+  Left err  -> die $ show err
 
 parseOpR :: Parser AsmOpR
 parseOpR = parseOp :: Parser AsmOpR
@@ -142,15 +144,16 @@ parseVal  =  parseName
       return $ Name name
 
 parseExpr :: Parser AsmExpr
-parseExpr  =  try parseLabel
+parseExpr  =  try parseIgnore
+          <|> try parseLabel
           <|> try parseOprR
           <|> try parseOprI
           <|> try parseOprJ
   where
     parseIgnore = do
       spaces
-      char '#' <|> space
-      spaces
+      char '#'
+      many (noneOf "\n")
       return Ignore
     parseLabel = do
       spaces
@@ -187,6 +190,9 @@ parseExpr  =  try parseLabel
       op <- parseOpJ; spaces
       cv <- parseVal; spaces
       return $ OprJ op cv
+
+parseProg :: Parser AsmProg
+parseProg = many parseExpr >>= return
 
 ------------------------------------------------------------
 -- Evaluation Functions
@@ -273,9 +279,9 @@ countInst _         (x:xs) = (x+1) : (x:xs)
 
 emitAsm :: FilePath -> IO [BinCode]
 emitAsm src = do
-  codes <- liftM lines $ readFile src
-  let asts = map runParse codes
-      nums = reverse $ foldr countInst (0:[]) $ reverse asts
+  code <- readFile src
+  asts <- runParse code
+  let nums = reverse $ foldr countInst (0:[]) $ reverse asts
       env  = foldr makeEnv nullEnv $ zip asts nums
       bins = zipWith (evalExpr env) nums asts
   print env
