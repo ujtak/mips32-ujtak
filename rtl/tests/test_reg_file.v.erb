@@ -1,0 +1,83 @@
+% load "parameters.rb"
+
+`timescale 1ns/1ps
+
+module test_reg_file();
+`include "parameters.vh"
+
+  /*AUTOREGINPUT*/
+
+  /*AUTOWIRE*/
+
+  //clock
+  always
+  begin
+    clk = 0;
+    #(STEP/2);
+    clk = 1;
+    #(STEP/2);
+  end
+
+  //flow
+  integer i;
+  initial
+  begin
+    reg_write = 0;
+    read1 = 0;
+    read2 = 0;
+    write_reg = 0;
+    write_data = 0;
+    #(STEP);
+
+    reg_write = 1;
+    for (i=0; i<2**RSIZE; i=i+1)
+    begin
+      write_reg  = i;
+      write_data = i;
+      #(STEP);
+    end
+    reg_write = 0;
+    write_reg = 0;
+    write_data = 0;
+    #(STEP*5);
+
+    for (i=0; i<2**RSIZE; i=i+1)
+    begin
+      read1 = i;
+      read2 = 2**RSIZE-1-i;
+      #(STEP);
+    end
+    read1 = 0;
+    read2 = 0;
+    #(STEP*5);
+
+    $finish();
+  end
+
+  reg_file dut0(/*AUTOINST*/);
+
+  //display
+  always
+  begin
+    #(STEP/2-1);
+    $display(
+      "%d: ", $time/STEP,
+      "| ",
+      "%d ", reg_write,
+      "%d ", read1,
+      "%d ", read2,
+      "%d ", write_reg,
+      "%d ", write_data,
+      "| ",
+      "%d ", data1,
+      "%d ", data2,
+      "|"
+    );
+    #(STEP/2+1);
+  end
+
+endmodule
+
+// Local Variables:
+// verilog-library-directories:("." "..")
+// End:

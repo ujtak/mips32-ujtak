@@ -1,0 +1,75 @@
+% load "parameters.rb"
+
+`timescale 1ns/1ps
+
+module test_mem_data();
+`include "parameters.vh"
+
+  /*AUTOREGINPUT*/
+
+  /*AUTOWIRE*/
+
+  //clock
+  always
+  begin
+    clk = 0;
+    #(STEP/2);
+    clk = 1;
+    #(STEP/2);
+  end
+
+  //flow
+  integer i;
+  initial
+  begin
+    mem_we = 0;
+    mem_addr = 0;
+    write_data = 0;
+    #(STEP);
+
+    mem_we = 1;
+    for (i=0; i<2**RSIZE; i=i+1)
+    begin
+      mem_addr = 4*i;
+      write_data = i;
+      #(STEP);
+    end
+    mem_we = 0;
+    write_data = 0;
+    #(STEP*5);
+
+    for (i=0; i<2**RSIZE; i=i+1)
+    begin
+      mem_addr = 4*i;
+      #(STEP);
+    end
+    mem_addr = 0;
+    #(STEP*5);
+
+    $finish();
+  end
+
+  mem_data dut0(/*AUTOINST*/);
+
+  //display
+  always
+  begin
+    #(STEP/2-1);
+    $display(
+      "%d: ", $time/STEP,
+      "| ",
+      "%d ", mem_we,
+      "%d ", mem_addr,
+      "%d ", write_data,
+      "| ",
+      "%d ", read_data,
+      "|"
+    );
+    #(STEP/2+1);
+  end
+
+endmodule
+
+// Local Variables:
+// verilog-library-directories:("." "..")
+// End:

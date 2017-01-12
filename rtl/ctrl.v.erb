@@ -42,8 +42,10 @@ module ctrl(/*AUTOARG*/);
       // {alu_op, alu_src, branch, mem_read, mem_to_reg, mem_write, reg_dst, reg_write}
       OP_R:     gen_ctrl = 'b100000011;
       OP_LW:    gen_ctrl = 'b001011001;
-      OP_SW:    gen_ctrl = 'b00100x1x0;
-      OP_BEQ:   gen_ctrl = 'b01010x0x0;
+      // OP_SW:    gen_ctrl = 'b00100x1x0;
+      // OP_BEQ:   gen_ctrl = 'b01010x0x0;
+      OP_SW:    gen_ctrl = 'b001000100;
+      OP_BEQ:   gen_ctrl = 'b010100000;
       default:  gen_ctrl = 'bxxxxxxxxx;
     endcase
   endfunction

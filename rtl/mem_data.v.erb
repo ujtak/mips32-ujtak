@@ -19,17 +19,13 @@ module mem_data(/*AUTOARG*/);
 
   /*AUTOREG*/
   reg signed [DWIDTH-1:0] mem [WORDS-1:0];
-  reg [DWIDTH-1:0]        addr_reg;
 
-  assign read_data = mem[addr_reg];
   assign word_addr = {2'd0, mem_addr[DWIDTH-1:2]};
+  assign read_data = mem[word_addr];
 
-  always @(*)
-  begin
+  always @(negedge clk)
     if(mem_we)
       mem[word_addr] <= write_data;
-    addr_reg <= word_addr;
-  end
 
   integer i;
   initial

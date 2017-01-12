@@ -38,8 +38,8 @@ module top(/*AUTOARG*/);
   ctrl ctrl(/*AUTOINST*/);
 
   assign write_reg = reg_dst
-                   ? inst[DWIDTH-OPWIDTH-RSIZE-1:DWIDTH-OPWIDTH-2*RSIZE]
-                   : inst[DWIDTH-OPWIDTH-2*RSIZE-1:DWIDTH-OPWIDTH-3*RSIZE];
+                   ? inst[DWIDTH-OPWIDTH-2*RSIZE-1:DWIDTH-OPWIDTH-3*RSIZE]
+                   : inst[DWIDTH-OPWIDTH-RSIZE-1:DWIDTH-OPWIDTH-2*RSIZE];
 
   /* reg_file AUTO_TEMPLATE (
       .read1      (inst[DWIDTH-OPWIDTH-1:DWIDTH-OPWIDTH-RSIZE]),
@@ -64,6 +64,9 @@ module top(/*AUTOARG*/);
   ); */
   alu alu(/*AUTOINST*/);
 
+  /* alu_ctrl AUTO_TEMPLATE (
+      .func_code (inst[OPWIDTH-1:0]),
+  ); */
   alu_ctrl alu_ctrl(/*AUTOINST*/);
 
   /* mem_data AUTO_TEMPLATE (

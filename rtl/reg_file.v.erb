@@ -24,7 +24,7 @@ module reg_file(/*AUTOARG*/);
   assign data1 = file[read1];
   assign data2 = file[read2];
 
-  always @(*)
+  always @(negedge clk)
     if (reg_write)
       file[write_reg] <= write_data;
 

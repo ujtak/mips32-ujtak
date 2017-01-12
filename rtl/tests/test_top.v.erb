@@ -1,7 +1,7 @@
 % load "parameters.rb"
 % inst_file = "tests/test_top.dat"
 % data_file = "tests/mem_data.dat"
-% max_step = 256
+% max_step = 32
 
 `timescale 1ns/1ps
 
@@ -120,6 +120,7 @@ module test_top();
       "%3d ", dut0.reg_data,
       "%1d ", dut0.mem_write,
       "%3d ", dut0.alu_result,
+      "%3d ", dut0.data2,
       "|"
     );
     #(STEP/2+1);
