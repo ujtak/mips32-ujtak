@@ -17,29 +17,28 @@ module alu_ctrl(/*AUTOARG*/);
   /*AUTOWIRE*/
 
   /*AUTOREG*/
-  reg [ALUWIDTH-1:0] r_code;
 
-  assign alu_code = r_code;
+  assign alu_code = gen_code(alu_op, func_code);
 
-  always @(posedge clk)
-    if (!xrst)
-      r_code <= 0;
-    else
-      case (alu_op)
-        ALUOP_LS: r_code <= ALU_ADD;
-        ALUOP_BEQ: r_code <= ALU_SUB;
-        ALUOP_R:
-          case (func_code)
-            MIPS_ADD: r_code <= ALU_ADD;
-            MIPS_SUB: r_code <= ALU_SUB;
-            MIPS_AND: r_code <= ALU_AND;
-            MIPS_OR:  r_code <= ALU_OR;
-            MIPS_NOR: r_code <= ALU_NOR;
-            MIPS_SLT: r_code <= ALU_SLT;
-            default:  r_code <= ALU_XXX;
-          endcase
-        default: r_code <= ALU_XXX;
-      endcase
+  function [ALUWIDTH-1:0] gen_code;
+    input [ALUOP_W-1:0] alu_op;
+    input [OPWIDTH-1:0] func_code;
+    case (alu_op)
+      ALUOP_LS: gen_code = ALU_ADD;
+      ALUOP_BEQ: gen_code = ALU_SUB;
+      ALUOP_R:
+        case (func_code)
+          MIPS_ADD: gen_code = ALU_ADD;
+          MIPS_SUB: gen_code = ALU_SUB;
+          MIPS_AND: gen_code = ALU_AND;
+          MIPS_OR:  gen_code = ALU_OR;
+          MIPS_NOR: gen_code = ALU_NOR;
+          MIPS_SLT: gen_code = ALU_SLT;
+          default:  gen_code = ALU_XXX;
+        endcase
+      default: gen_code = ALU_XXX;
+    endcase
+  endfunction
 
 endmodule
 

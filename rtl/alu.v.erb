@@ -7,9 +7,9 @@ module alu(/*AUTOARG*/);
   /*AUTOINPUT*/
   input                 clk;
   input                 xrst;
+  input [ALUWIDTH-1:0]  alu_code;
   input [DWIDTH-1:0]    in_a;
   input [DWIDTH-1:0]    in_b;
-  input [ALUWIDTH-1:0]  alu_code;
 
   /*AUTOOUTPUT*/
   output              zero;
@@ -18,24 +18,24 @@ module alu(/*AUTOARG*/);
   /*AUTOWIRE*/
 
   /*AUTOREG*/
-  reg [DWIDTH-1:0] r_result;
 
-  assign zero = result == 0;
-  assign result = r_result;
+  assign zero   = result == 0;
+  assign result = gen_alu(alu_code, in_a, in_b);
 
-  always @(posedge clk)
-    if (!xrst)
-      r_result <= 0;
-    else
-      case (alu_code)
-        ALU_AND:  r_result <= in_a & in_b;
-        ALU_OR:   r_result <= in_a | in_b;
-        ALU_ADD:  r_result <= in_a + in_b;
-        ALU_SUB:  r_result <= in_a - in_b;
-        ALU_SLT:  r_result <= in_a < in_b;
-        ALU_NOR:  r_result <= ~(in_a | in_b);
-        default:  r_result <= 0;
-      endcase
+  function [ALUOP_W+7-1:0] gen_alu;
+    input [ALUWIDTH-1:0]  alu_code;
+    input [DWIDTH-1:0]    in_a;
+    input [DWIDTH-1:0]    in_b;
+    case (alu_code)
+      ALU_AND:  gen_alu = in_a & in_b;
+      ALU_OR:   gen_alu = in_a | in_b;
+      ALU_ADD:  gen_alu = in_a + in_b;
+      ALU_SUB:  gen_alu = in_a - in_b;
+      ALU_SLT:  gen_alu = in_a < in_b;
+      ALU_NOR:  gen_alu = ~(in_a | in_b);
+      default:  gen_alu = 0;
+    endcase
+  endfunction
 
 endmodule
 

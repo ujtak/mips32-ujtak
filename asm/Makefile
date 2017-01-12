@@ -6,10 +6,10 @@ mybuild:
 	stack ghc -- -o $(TARGET) parser.hs
 
 build:
-	/usr/bin/ghc -package parsec -o $(TARGET) parser.hs
+	/home/work/takau/local/bin/stack ghc -- -o $(TARGET) parser.hs
 
 install:
-	cabal install parsec
+	/home/work/takau/local/bin/stack install parsec
 
 clean:
 	rm -f $(TARGET)

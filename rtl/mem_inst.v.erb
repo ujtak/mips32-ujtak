@@ -14,19 +14,26 @@ module mem_inst(/*AUTOARG*/);
   output signed [DWIDTH-1:0] read_data;
 
   /*AUTOWIRE*/
+  wire [DWIDTH-1:0] word_addr;
 
   /*AUTOREG*/
   reg signed [DWIDTH-1:0] mem [WORDS-1:0];
   reg [DWIDTH-1:0]        addr_reg;
 
   assign read_data = mem[addr_reg];
+  assign word_addr = {2'd0, mem_addr[DWIDTH-1:2]};
 
-  always @(posedge clk)
+  always @(*)
   begin
     if(mem_we)
       mem[mem_addr] <= write_data;
-    addr_reg <= mem_addr;
+    addr_reg <= word_addr;
   end
+
+  integer i;
+  initial
+    for (i = 0; i < WORDS; i = i + 1)
+      mem[i] = 0;
 
 endmodule
 

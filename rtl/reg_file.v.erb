@@ -19,12 +19,12 @@ module reg_file(/*AUTOARG*/);
   /*AUTOWIRE*/
 
   /*AUTOREG*/
-  reg [DWIDTH-1:0] file [WORDS-1:0];
+  reg signed [DWIDTH-1:0] file [WORDS-1:0];
 
   assign data1 = file[read1];
   assign data2 = file[read2];
 
-  always @(posedge clk)
+  always @(*)
     if (reg_write)
       file[write_reg] <= write_data;
 

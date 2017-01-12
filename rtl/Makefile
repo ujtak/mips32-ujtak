@@ -1,11 +1,13 @@
 #### notice, don't forget update Makefile.dep
 # SIMULATOR = (vsim,) vcs, xsim, iverilog
 SIMULATOR = iverilog
-MODULE   = top
-LINK_DIR = .
-TEST_DIR = tests
-TARGET   = $(TEST_DIR)/test_$(MODULE)
-DIST     = ../dist
+MODULE    = top
+TEST_DIR  = tests
+OUTFILE   = mem_data
+
+LINK_DIR  = .
+DIST      = ../dist
+TARGET    = $(TEST_DIR)/test_$(MODULE)
 
 include Makefile.dep
 include VERBMakefile
@@ -24,10 +26,10 @@ log:
 	nvim $(TARGET).log
 
 edit:
-	nvim -O $(TARGET).v.erb `echo $(TARGET) | awk -F "$(TEST__DIR)/test_" '{print $$2 ".v.erb"}'`
+	nvim -O $(TARGET).v.erb `echo $(TARGET) | awk -F "$(TEST_DIR)/test_" '{print $$2 ".v.erb"}'`
 
 diff:
-	nvim -d $(TARGET).dat $(TARGET)_true.dat
+	nvim -d $(OUTFILE)_test.dat $(OUTFILE)_true.dat
 
 define DEP_IN
 ## -*- text -*-
