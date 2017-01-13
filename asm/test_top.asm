@@ -5,12 +5,12 @@
 
 # Python test:
 # >>> x1 = 25; x2 = 35
-# >>> x = (x1 - x2) and (x1 + x2)
+# >>> x = (x1 - x2) & (x1 + x2)
 # >>> x
-# 60
-# >>> y = (x2 - x1) or (x2 + x1)
+# 52
+# >>> y = (x2 - x1) | (x2 + x1)
 # >>> y
-# 10
+# 62
 
 main:
   lw $t0, 0($zero)
@@ -25,6 +25,10 @@ main:
   add $t5, $t5, $t5
   add $t5, $t5, $t5
 
+dumb:
+  add $t5, $t5, $t5
+  add $t5, $t5, $t5
+
 skip:
   sw $t5, 4($zero)
   sub $t3, $t2, $t1
@@ -33,8 +37,4 @@ skip:
   # won't skip to dumb:
   beq $t5, $t7, dumb
   sw $t5, 8($zero)
-
-dumb:
-  add $t5, $t5, $t5
-  add $t5, $t5, $t5
 
