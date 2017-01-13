@@ -1,4 +1,4 @@
-TARGET = parser.out
+TARGET = mips-asm
 
 .PHONY: mybuild build install clean
 
