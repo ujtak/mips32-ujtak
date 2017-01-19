@@ -2,7 +2,7 @@
 # SIMULATOR = (vsim,) vcs, xsim, iverilog
 SIMULATOR = iverilog
 MODULE    = top
-TEST_DIR  = tests
+TEST_DIR  = test
 OUTFILE   = mem_data
 
 LINK_DIR  = .
