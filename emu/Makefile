@@ -1,6 +1,6 @@
 #ref = "http://urin.github.io/posts/2013/simple-makefile-for-clang/"
 
-TARGET = mips.out
+TARGET = mips-emu
 COMPILER = clang++
 CFLAGS = -g -MMD -MP -Wall -Wextra -Winit-self -Wno-unused-parameter -Wfloat-equal -std=c++14 -O3 #-fopenmp
 LDFLAGS = #-fopenmp
