@@ -34,38 +34,43 @@ class Eq a => AsmOp a where
   parseOp   = choice opParsers
     where opParsers = map (\(a, b) -> try $ string a >> return b) opTable
 
-data AsmOpR = And | Or | Add | Sub
+data AsmOpR = Add | Addu | And | Jr | Nor | Or
+            | Slt | Sltu | Sll | Srl | Sub | Subu
             deriving (Show, Eq)
 instance AsmOp AsmOpR where
-  opTable   = [ ("and", And)
-              , ("or",  Or)
-              , ("add", Add)
-              , ("sub", Sub)
+  opTable   = [ ("add", Add), ("addu", Addu), ("and", And), ("jr", Jr)
+              , ("nor", Nor), ("or", Or),     ("slt", Slt), ("sltu", Sltu)
+              , ("sll", Sll), ("srl", Srl),   ("sub", Sub), ("subu", Subu)
               ]
-  hexTable  = [ (And, 0x24)
-              , (Or,  0x25)
-              , (Add, 0x20)
-              , (Sub, 0x22)
+  hexTable  = [ (Add, 0x20), (Addu, 0x21), (And, 0x24), (Jr, 0x8)
+              , (Nor, 0x27), (Or, 0x25),   (Slt, 0x2a), (Sltu, 0x2b)
+              , (Sll, 0x00), (Srl, 0x2),   (Sub, 0x22), (Subu, 0x23)
               ]
 
-data AsmOpI = Lw | Sw | Beq
+data AsmOpI = Addi | Addi | Andi | Beq | Bne | Lbu
+            | Lhu | Ll | Lui | Lw | Ori | Slti
+            | Sltiu | Sb | Sc | Sh | Sw
             deriving (Show, Eq)
 instance AsmOp AsmOpI where
-  opTable   = [ ("lw",  Lw)
-              , ("sw",  Sw)
-              , ("beq", Beq)
+  opTable   = [ ("addi", Addi),   ("addiu", Addiu), ("andi", Andi), ("beq", Beq)
+              , ("bne", Bne),     ("lbu", Lbu),     ("lhu", Lhu),   ("ll", Ll)
+              , ("lui", Lui),     ("lw", Lw),       ("ori", Ori),   ("slti", Slti)
+              , ("sltiu", Sltiu), ("sb", Sb),       ("sc", Sc),     ("sh", Sh)
+              , ("sw", Sw)
               ]
-  hexTable  = [ (Lw,  0x23)
-              , (Sw,  0x2b)
-              , (Beq, 0x4)
+  hexTable  = [ (Addi, 0x8),  (Addiu, 0x9), (Andi, 0xc), (Beq, 0x4)
+              , (Bne, 0x5),   (Lbu, 0x24),  (Lhu, 0x25), (Ll, 0x30)
+              , (Lui, 0xf),   (Lw, 0x23),   (Ori, 0xd),  (Slti, 0xa)
+              , (Sltiu, 0xb), (Sb, 0x28),   (Sc, 0x38),  (Sh, 0x29)
+              , (Sw, 0x2b)
               ]
 
-data AsmOpJ = J
+data AsmOpJ = J | Jal
             deriving (Show, Eq)
 instance AsmOp AsmOpJ where
-  opTable   = [ ("j", J)
+  opTable   = [ ("j",   J) , ("jal", Jal)
               ]
-  hexTable  = [ (J, 0x2)
+  hexTable  = [ (J, 0x2), (Jal, 0x3)
               ]
 
 data AsmVal   = Imm   Int
@@ -217,29 +222,45 @@ evalExpr env line (Label l) = ""
 evalExpr env line (Ignore) = ""
 
 evalExpr env line (OprR op rd rs rt)
-  = "000000"
- ++ evalVal 5 env rs
- ++ evalVal 5 env rt
- ++ evalVal 5 env rd
- ++ "00000"
- ++ evalOpR 6 op
+  | op `elem` [Jr]
+      =  "000000"
+      ++ evalVal 5 env rs
+      ++ "00000"
+      ++ "00000"
+      ++ "00000"
+      ++ evalOpR 6 op
+  -- Differs from the definition of patterson & hennessy (diff rs, rt)
+  | op `elem` [Sll, Srl]
+      =  "000000"
+      ++ "00000"
+      ++ evalVal 5 env rs
+      ++ evalVal 5 env rd
+      ++ evalVal 5 env rt
+      ++ evalOpR 6 op
+  | otherwise
+      =  "000000"
+      ++ evalVal 5 env rs
+      ++ evalVal 5 env rt
+      ++ evalVal 5 env rd
+      ++ "00000"
+      ++ evalOpR 6 op
 
 evalExpr env line (OprI Beq rs rt cv)
-  = evalOpI 6  Beq
- ++ evalVal 5  env rs
- ++ evalVal 5  env rt
- ++ evalVal_16_env_cv'
+  | op `elem` [Beq, Bne]
+      =  evalOpI 6  op
+      ++ evalVal 5  env rs
+      ++ evalVal 5  env rt
+      ++ evalVal_16_env_cv'
+  | otherwise
+      =  evalOpI 6  op
+      ++ evalVal 5  env rs
+      ++ evalVal 5  env rt
+      ++ evalVal 16 env cv
   where
     cv'  = (read $ evalVal 16 env cv) - (line+1)
     comp len x | x < 0     = ((-x) `xor` (2^len - 1)) + 1
                | otherwise = x
     evalVal_16_env_cv' = printf "%016b" $ comp 16 cv'
-
-evalExpr env line (OprI op rs rt cv)
-  = evalOpI 6  op
- ++ evalVal 5  env rs
- ++ evalVal 5  env rt
- ++ evalVal 16 env cv
 
 evalExpr env line (OprJ op cv)
   = evalOpJ 6  op
