@@ -47,7 +47,7 @@ instance AsmOp AsmOpR where
               , (Sll, 0x00), (Srl, 0x2),   (Sub, 0x22), (Subu, 0x23)
               ]
 
-data AsmOpI = Addi | Addi | Andi | Beq | Bne | Lbu
+data AsmOpI = Addi | Addiu | Andi | Beq | Bne | Lbu
             | Lhu | Ll | Lui | Lw | Ori | Slti
             | Sltiu | Sb | Sc | Sh | Sw
             deriving (Show, Eq)
@@ -245,7 +245,7 @@ evalExpr env line (OprR op rd rs rt)
       ++ "00000"
       ++ evalOpR 6 op
 
-evalExpr env line (OprI Beq rs rt cv)
+evalExpr env line (OprI op rs rt cv)
   | op `elem` [Beq, Bne]
       =  evalOpI 6  op
       ++ evalVal 5  env rs
